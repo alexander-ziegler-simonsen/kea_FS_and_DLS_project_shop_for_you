@@ -1,0 +1,9 @@
+name: BasicGithubActionExample
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: 
+  workflow_dispatch:
+    jobs:
+      GitHub-Actions-example:
+        runs-on: ubuntu-latest
+        steps:
+          - run: echo "🎉 The job was run manual by the button click on github, which triggered the  ${{ github.event_name }}' event."
