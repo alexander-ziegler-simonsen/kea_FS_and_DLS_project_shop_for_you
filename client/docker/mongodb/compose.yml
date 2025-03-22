@@ -1,0 +1,18 @@
+services:
+  ShopForYouMongo: 
+    image: mongo
+    ports:
+      - "27018:27017"
+    networks:
+      - backend
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MON_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MON_PASSWORD}
+
+    volumes:
+      - mongodata:/data/db
+volumes:
+  mongodata:
+    driver: local
+networks:
+  backend: {}
