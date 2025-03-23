@@ -1,6 +1,6 @@
 services:
-  ShopForYouMongo: 
-    image: mongo
+  shop-for-you-mongodb: 
+    build: .
     ports:
       - "27018:27017"
     networks:
@@ -8,9 +8,12 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MON_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MON_PASSWORD}
-
+    #command: ["/bin/bash", "/docker-entrypoint-initdb.d/mongo_init.sh"]
+    
     volumes:
-      - mongodata:/data/db
+      - mongodata:/data/db                                         # persisten mongoDB data volume, to keep data across restarts
+      # - ./mongo_init.sh:/docker-entrypoint-initdb.d/mongo_init.sh:rw  # the init script # not needed anymore, after I added a Dockerfile to run the init script
+      - ./data:/docker-entrypoint-initdb.d/data                    # the json data folder, with all the test import data, for each of the tables
 volumes:
   mongodata:
     driver: local
