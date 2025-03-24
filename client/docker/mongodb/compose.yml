@@ -1,5 +1,5 @@
 services:
-  shop-for-you-mongodb: 
+  sfu-mongodb: 
     build: .
     ports:
       - "27018:27017"
@@ -12,10 +12,8 @@ services:
     
     volumes:
       - mongodata:/data/db                                         # persisten mongoDB data volume, to keep data across restarts
-      # - ./mongo_init.sh:/docker-entrypoint-initdb.d/mongo_init.sh:rw  # the init script # not needed anymore, after I added a Dockerfile to run the init script
-      - ./data:/docker-entrypoint-initdb.d/data                    # the json data folder, with all the test import data, for each of the tables
 volumes:
   mongodata:
     driver: local
 networks:
-  backend: {}
+  backend: 
