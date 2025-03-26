@@ -8,12 +8,37 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MON_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MON_PASSWORD}
-    #command: ["/bin/bash", "/docker-entrypoint-initdb.d/mongo_init.sh"]
-    
     volumes:
       - mongodata:/data/db                                         # persisten mongoDB data volume, to keep data across restarts
+  sfu-postgres:
+    build: ./docker/postgres
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+    environment:
+      POSTGRES_USER: ${POST_USERNAME}
+      POSTGRES_PASSWORD: ${POST_PASSWORD}
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+  # sfu-rabbitmq:
+  #   build: ./docker/rabbitmq
+  #   ports:
+  #     - "5673:5672"
+  #     - "15673:15672"
+  #   networks:
+  #     - backend
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME}
+  #     - RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+  #   volumes:
+  #     - rabbitmqdata:/var/lib/rabbitmq
 volumes:
   mongodata:
+    driver: local
+  postgresdata:
+    driver: local
+  rabbitmqdata:
     driver: local
 networks:
   backend: 
