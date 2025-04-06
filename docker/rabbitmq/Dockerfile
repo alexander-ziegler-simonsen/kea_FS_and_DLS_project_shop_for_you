@@ -1,5 +1,5 @@
 # Use the official rabbitmq base image
-FROM rabbitmq:latest
+FROM rabbitmq:management-alpine
 
 # Set the working directory to /docker-entrypoint-initdb.d
 WORKDIR /docker-entrypoint-initdb.d
