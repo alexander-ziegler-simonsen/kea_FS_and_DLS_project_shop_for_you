@@ -1,5 +1,5 @@
 services:
-  sfu-mongodb: 
+  sfu-mongodb:
     build: ./docker/mongodb
     ports:
       - "27018:27017"
@@ -9,7 +9,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MON_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MON_PASSWORD}
     volumes:
-      - mongodata:/data/db                                         # persisten mongoDB data volume, to keep data across restarts
+      - mongodata:/data/db # persisten mongoDB data volume, to keep data across restarts
   sfu-postgres:
     build: ./docker/postgres
     ports:
@@ -21,18 +21,18 @@ services:
       POSTGRES_PASSWORD: ${POST_PASSWORD}
     volumes:
       - postgresdata:/var/lib/postgresql/data
-  # sfu-rabbitmq:
-  #   build: ./docker/rabbitmq
-  #   ports:
-  #     - "5673:5672"
-  #     - "15673:15672"
-  #   networks:
-  #     - backend
-  #   environment:
-  #     - RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME}
-  #     - RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
-  #   volumes:
-  #     - rabbitmqdata:/var/lib/rabbitmq
+  sfu-rabbitmq:
+    build: ./docker/rabbitmq
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    networks:
+      - backend
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
 volumes:
   mongodata:
     driver: local
@@ -41,4 +41,4 @@ volumes:
   rabbitmqdata:
     driver: local
 networks:
-  backend: 
+  backend:
