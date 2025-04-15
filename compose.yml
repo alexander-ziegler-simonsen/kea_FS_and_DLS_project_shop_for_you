@@ -10,6 +10,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MON_PASSWORD}
     volumes:
       - mongodata:/data/db # persisten mongoDB data volume, to keep data across restarts
+  
+  
+  
   sfu-postgres:
     build: ./docker/postgres
     ports:
@@ -21,6 +24,9 @@ services:
       POSTGRES_PASSWORD: ${POST_PASSWORD}
     volumes:
       - postgresdata:/var/lib/postgresql/data
+  
+  
+  
   sfu-rabbitmq:
     build: ./docker/rabbitmq
     ports:
