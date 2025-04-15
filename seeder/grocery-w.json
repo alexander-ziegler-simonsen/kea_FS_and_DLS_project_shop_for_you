@@ -1,0 +1,622 @@
+{
+  "groceries": [
+    {
+      "id": "6acb8905-ecb7-4aa3-b231-32f4f52aa550",
+      "name": "Granny Smith Apple",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "e3f8f9a3-af8d-4a09-b093-862799878852",
+          "name": "Fruit",
+          "createdAt": "2025-04-10T08:18:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "09c3e4c2-1c95-4967-84a0-354852c40d7c",
+          "price": 9.02,
+          "createdAt": "2025-04-10T08:33:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "c5c9a09b-2a39-49a8-b1a7-50e30595c220",
+          "description": "Low in fat, high in energy.",
+          "createdAt": "2025-04-10T08:18:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "0f6d70a4-cf99-49c7-b63c-c68c24d318b3",
+      "name": "Banana",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "8adc10dd-4911-4ef9-b8b0-f6878e5866cf",
+          "name": "Fruit",
+          "createdAt": "2025-04-10T08:07:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "e3e3c90c-9600-4f0b-8465-bd27bb2b8183",
+          "price": 6.4,
+          "createdAt": "2025-04-10T08:25:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "66821b93-1bd5-4f39-8271-b5ac01ad9ca0",
+          "description": "Farm-grown and organic.",
+          "createdAt": "2025-04-10T08:32:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "84a0771c-750c-4b41-a1ac-8f133f22f0e2",
+      "name": "Whole Wheat Bread",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "b660f32a-3ce6-4243-b6ff-64d71ebe267f",
+          "name": "Grain",
+          "createdAt": "2025-04-10T08:46:00Z",
+          "deletedAt": null
+        },
+        {
+          "id": "0401c60f-69f4-42ae-b0c0-9c34f9fa1275",
+          "name": "Baked",
+          "createdAt": "2025-04-10T08:40:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "52e86b06-e0cd-43d2-8110-9c6e6b3f0cd0",
+          "price": 9.71,
+          "createdAt": "2025-04-10T08:24:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "89f06b1b-c977-4aac-86b8-ea3958eec9c7",
+          "description": "Organic and locally sourced.",
+          "createdAt": "2025-04-10T08:17:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "996ab3a8-329f-40ec-b004-3ea3ced4f7eb",
+      "name": "Almond Milk",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "443a3287-e007-41de-b25d-e3baef505483",
+          "name": "Dairy-Free",
+          "createdAt": "2025-04-10T08:52:00Z",
+          "deletedAt": null
+        },
+        {
+          "id": "13275f82-c47c-4381-b3d2-5a28cc8dd23c",
+          "name": "Beverage",
+          "createdAt": "2025-04-10T08:04:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "50ebda66-69a4-4397-875e-022329bfd8dc",
+          "price": 4.53,
+          "createdAt": "2025-04-10T08:17:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "48e31342-ef39-4c1c-a08a-bb455235d888",
+          "description": "Great source of protein.",
+          "createdAt": "2025-04-10T08:05:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "54779001-3bcb-4b5c-894f-51df970905ca",
+      "name": "Greek Yogurt",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "d4977b9d-27ba-4af2-a77e-8ae2005d4354",
+          "name": "Dairy",
+          "createdAt": "2025-04-10T08:39:00Z",
+          "deletedAt": null
+        },
+        {
+          "id": "8435ffbf-28c9-48aa-a915-795ab1c23176",
+          "name": "Protein",
+          "createdAt": "2025-04-10T08:44:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "af9d84ce-a62b-4e27-9980-a5b806fbf10c",
+          "price": 4.16,
+          "createdAt": "2025-04-10T08:58:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "69c29baf-56e0-49f4-86fd-e9fc945f0e21",
+          "description": "Delicious and fresh.",
+          "createdAt": "2025-04-10T08:53:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "5f79ba48-6c4b-4e70-a6f2-db6f69d29b4e",
+      "name": "Organic Eggs",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "fc54c486-edd6-43a2-a5e4-bcc3bc3e8441",
+          "name": "Protein",
+          "createdAt": "2025-04-10T08:24:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "bf71bb94-16ab-4698-8137-06b13c5c0ae2",
+          "price": 1.53,
+          "createdAt": "2025-04-10T08:56:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "62e2eaed-a7fd-48ab-9ecd-e70e5ea4cf58",
+          "description": "Great source of protein.",
+          "createdAt": "2025-04-10T08:25:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "42e264aa-3728-4347-a2f2-340fd023b612",
+      "name": "Chicken Breast",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "db93e269-7d5c-4482-b9f2-d4cac8e92719",
+          "name": "Protein",
+          "createdAt": "2025-04-10T08:36:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "4dba18dc-3f68-480d-8f1a-e8daca288cc6",
+          "price": 6.85,
+          "createdAt": "2025-04-10T08:18:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "1d933df5-b1df-4c67-a599-7c55c7e22a44",
+          "description": "Delicious and fresh.",
+          "createdAt": "2025-04-10T08:37:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "65d1f356-5a89-4845-be33-ea182ec24d30",
+      "name": "Broccoli",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "09c0a62b-a846-4af1-9ac7-a278a5efe7af",
+          "name": "Vegetable",
+          "createdAt": "2025-04-10T08:57:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "6fecaa56-4c40-4117-a5ab-d4926c24415d",
+          "price": 8.38,
+          "createdAt": "2025-04-10T08:53:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "acae9c18-6720-40d1-8ec2-6c50c4832d58",
+          "description": "Delicious and fresh.",
+          "createdAt": "2025-04-10T08:18:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "3f02e459-202e-48ff-ae03-3a0c39bc72f7",
+      "name": "Carrots",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "f6abea50-5966-476b-84ee-54d6516c4763",
+          "name": "Vegetable",
+          "createdAt": "2025-04-10T08:44:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "f978994b-b6cb-4c95-8cce-c972bb7ed9a6",
+          "price": 5.44,
+          "createdAt": "2025-04-10T08:19:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "065928e6-18e5-420a-a7ab-9519b489e30c",
+          "description": "Low in fat, high in energy.",
+          "createdAt": "2025-04-10T08:48:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "61c63c18-8995-4601-889c-7761e8f82f42",
+      "name": "Spinach",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "5e69563f-893c-47cd-9201-475ad89d1498",
+          "name": "Vegetable",
+          "createdAt": "2025-04-10T08:46:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "51e27686-8856-40d1-bb77-f09883b57f44",
+          "price": 6.12,
+          "createdAt": "2025-04-10T08:16:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "85362c0b-7272-405f-812a-afed1a1e0368",
+          "description": "Rich in vitamins.",
+          "createdAt": "2025-04-10T08:22:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "448d6064-19d0-4f85-b471-a9d63f241dab",
+      "name": "Brown Rice",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "3a55e981-e101-4f39-8931-f8a19a214e29",
+          "name": "Grain",
+          "createdAt": "2025-04-10T08:15:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "404f14df-139c-4ac8-b467-ee4e1c70baab",
+          "price": 8.68,
+          "createdAt": "2025-04-10T08:24:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "390bdb45-68af-416a-8760-b4a50ae3e783",
+          "description": "Perfect for breakfast.",
+          "createdAt": "2025-04-10T08:41:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "6f3ef965-2181-44ad-ae36-9d05363f0088",
+      "name": "Oats",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "cae63498-1422-4f54-bfa5-b59dcfa1edfa",
+          "name": "Grain",
+          "createdAt": "2025-04-10T08:23:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "d08efb12-f9d4-46ac-a5e1-1b2b3d46ed40",
+          "price": 1.63,
+          "createdAt": "2025-04-10T08:13:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "2b45f0ef-83eb-4084-9a7d-941086f04e80",
+          "description": "Farm-grown and organic.",
+          "createdAt": "2025-04-10T08:02:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "a3a4b76c-be03-4ee6-a810-f73c4c743bc3",
+      "name": "Strawberries",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "873de11b-531d-4ba3-8334-2f6b01302b92",
+          "name": "Fruit",
+          "createdAt": "2025-04-10T08:14:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "aa06fa31-9e43-4897-a1c7-19d95377d5b5",
+          "price": 6.41,
+          "createdAt": "2025-04-10T08:42:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "5c2e6095-675b-4e91-982c-0426bba92704",
+          "description": "Rich in vitamins.",
+          "createdAt": "2025-04-10T08:47:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "f95185d6-40ac-4865-9df1-2fcf0cf86265",
+      "name": "Blueberries",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "fa518ef9-2a03-4fdf-adba-49a5c9a542f1",
+          "name": "Fruit",
+          "createdAt": "2025-04-10T08:51:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "fa57d092-499a-4a11-acd5-fe06eb226a71",
+          "price": 2.03,
+          "createdAt": "2025-04-10T08:49:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "ee6d4217-fd97-4c4e-8b11-10a9dd41e9c4",
+          "description": "Low in fat, high in energy.",
+          "createdAt": "2025-04-10T08:00:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "abdefb2f-a592-412b-a0cd-74a0d005c4f3",
+      "name": "Cheddar Cheese",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "324b090d-3817-4b89-8caf-839f7f45f3b2",
+          "name": "Dairy",
+          "createdAt": "2025-04-10T08:30:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "b97429ac-d1f0-43d9-a32f-9ae37dc5ddbc",
+          "price": 3.33,
+          "createdAt": "2025-04-10T08:57:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "c24670a9-0191-443d-ac76-aaa36e499176",
+          "description": "Ideal for smoothies or cooking.",
+          "createdAt": "2025-04-10T08:02:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "3adc70ca-2856-4958-a792-8cff952f653d",
+      "name": "Tomatoes",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "f237d40f-254a-4a25-8dae-06b05d5895dc",
+          "name": "Vegetable",
+          "createdAt": "2025-04-10T08:23:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "f5772464-ab26-422f-b058-1055de09dad4",
+          "price": 3.93,
+          "createdAt": "2025-04-10T08:07:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "3338b21e-973f-42da-92ad-e1ecf38f00b1",
+          "description": "Great source of protein.",
+          "createdAt": "2025-04-10T08:23:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "8e1ba625-e552-4cfb-a707-3778e3a68b8c",
+      "name": "Cucumber",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "45693ca8-da7b-47b0-95ed-057a2fe6ef35",
+          "name": "Vegetable",
+          "createdAt": "2025-04-10T08:14:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "17112a17-dacd-4869-b3fb-0b62b202ae62",
+          "price": 8.2,
+          "createdAt": "2025-04-10T08:27:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "79370382-89fb-4ce5-adb0-e97548bd746b",
+          "description": "Organic and locally sourced.",
+          "createdAt": "2025-04-10T08:21:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "7853d878-0b8d-4b75-ba3d-9d16ae619a22",
+      "name": "Orange Juice",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "c860ab81-bbfa-4cbd-ad1a-0154fab32eea",
+          "name": "Beverage",
+          "createdAt": "2025-04-10T08:19:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "c91076c1-c6a1-436c-b3f9-36163a31b5f9",
+          "price": 4.25,
+          "createdAt": "2025-04-10T09:00:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "d55155fa-445d-475a-a630-e6f68230e5d1",
+          "description": "Low in fat, high in energy.",
+          "createdAt": "2025-04-10T08:34:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "2a22df67-32c6-4a58-b3c8-8f0449e8afd2",
+      "name": "Sweet Potatoes",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "dcb24f0f-12ce-4813-9553-c70c3ab435b3",
+          "name": "Vegetable",
+          "createdAt": "2025-04-10T08:33:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "b5390348-266a-44f7-8015-80a2513217c6",
+          "price": 9.82,
+          "createdAt": "2025-04-10T08:16:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "df0eebae-d7e0-46a8-9d7e-4203cdb19be2",
+          "description": "Low in fat, high in energy.",
+          "createdAt": "2025-04-10T08:47:00Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "id": "54184577-d7ff-4887-9d49-05879e68102f",
+      "name": "Salmon Fillet",
+      "createdAt": "2025-04-10T08:00:00Z",
+      "deletedAt": null,
+      "types": [
+        {
+          "id": "61af3c43-d842-405e-a5c9-3bf6f88302d1",
+          "name": "Protein",
+          "createdAt": "2025-04-10T08:01:00Z",
+          "deletedAt": null
+        }
+      ],
+      "prices": [
+        {
+          "id": "e555fca4-84a0-4137-9528-d514273bd9f0",
+          "price": 8.18,
+          "createdAt": "2025-04-10T08:03:00Z",
+          "deletedAt": null
+        }
+      ],
+      "descriptions": [
+        {
+          "id": "88023c2a-d883-4fc2-a0f2-e8f8a5565b46",
+          "description": "Great source of protein.",
+          "createdAt": "2025-04-10T08:49:00Z",
+          "deletedAt": null
+        }
+      ]
+    }
+  ]
+}

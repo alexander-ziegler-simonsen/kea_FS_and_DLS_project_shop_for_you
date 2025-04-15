@@ -49,6 +49,20 @@ services:
     volumes:
       - pgadmindata:/var/lib/pgadmin
 
+  sfy-seeder:
+    container_name: seeder
+    build:
+      context: ./seeder
+      dockerfile: Dockerfile
+    depends_on:
+      - sfu-postgres
+    environment:
+      DATABASE_URL: postgres://root:password@sfu-postgres:5432/postgres
+    volumes:
+      - ./seeder:/app
+    networks:
+      - backend
+
 volumes:
   mongodata:
     driver: local
