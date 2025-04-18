@@ -4,6 +4,14 @@ import { Grocery } from "./entities/Grocery";
 import { Type } from "./entities/Type";
 import { Price } from "./entities/Price";
 import { Description } from "./entities/Description";
+import amqp from "amqplib";
+
+async function setupRabbitMQ() {
+  const connection = await amqp.connect(`amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@sfu-rabbitmq:5672`);
+  const channel = await connection.createChannel();
+  await channel.assertExchange('grocery-exchange', 'topic', { durable: false });
+  return { connection, channel };
+}
 
 async function insertGroceries() {
   await AppDataSource.initialize();
@@ -17,7 +25,7 @@ async function insertGroceries() {
   const priceRepo = AppDataSource.getRepository(Price);
   const descriptionRepo = AppDataSource.getRepository(Description);
 
-  // 🧼 Step 1: Remove all join table references first
+  // Clean up old data
   const groceries = await groceryRepo.find({ relations: ["types", "prices", "descriptions"] });
 
   for (const grocery of groceries) {
@@ -40,72 +48,91 @@ async function insertGroceries() {
       .remove(grocery.descriptions);
   }
 
-  // 🧼 Step 2: Now we can delete the actual records
   await descriptionRepo.delete({});
   await priceRepo.delete({});
   await typeRepo.delete({});
   await groceryRepo.delete({});
   console.log("✅ All previous data deleted");
 
-  // 🔁 Step 3: Insert fresh data
-  for (const item of groceriesData) {
-    // ✅ Prevent duplicate types (based on name)
-    const typeEntities: Type[] = [];
-    for (const t of item.types) {
-      let type = await typeRepo.findOne({ where: { name: t.name } }); // 🟢 changed from ID to name
-      if (!type) {
-        type = typeRepo.create({
-          name: t.name,
-          createdAt: new Date(t.createdAt),
-        });
-        await typeRepo.save(type);
+  const { connection: rabbitConn, channel } = await setupRabbitMQ();
+
+  try {
+    for (const item of groceriesData) {
+      const typeEntities: Type[] = [];
+      for (const t of item.types) {
+        let type = await typeRepo.findOne({ where: { name: t.name } });
+        if (!type) {
+          type = typeRepo.create({
+            name: t.name,
+            createdAt: new Date(t.createdAt),
+          });
+          await typeRepo.save(type);
+        }
+        typeEntities.push(type);
       }
-      typeEntities.push(type);
+
+      const priceEntities: Price[] = [];
+      for (const p of item.prices) {
+        let price = await priceRepo.findOne({ where: { id: p.id } });
+        if (!price) {
+          price = priceRepo.create({
+            id: p.id,
+            price: p.price,
+            createdAt: new Date(p.createdAt),
+          });
+          await priceRepo.save(price);
+        }
+        priceEntities.push(price);
+      }
+
+      const descriptionEntities: Description[] = [];
+      for (const d of item.descriptions) {
+        let description = await descriptionRepo.findOne({ where: { id: d.id } });
+        if (!description) {
+          description = descriptionRepo.create({
+            id: d.id,
+            description: d.description,
+            createdAt: new Date(d.createdAt),
+          });
+          await descriptionRepo.save(description);
+        }
+        descriptionEntities.push(description);
+      }
+
+      const grocery = groceryRepo.create({
+        id: item.id,
+        name: item.name,
+        createdAt: new Date(item.createdAt),
+        types: typeEntities,
+        prices: priceEntities,
+        descriptions: descriptionEntities,
+      });
+
+      await groceryRepo.save(grocery);
+      console.log(`✅ Grocery "${grocery.name}" inserted.`);
+
+      // Send full grocery object to RabbitMQ
+      const message = {
+        id: grocery.id,
+        name: grocery.name,
+        createdAt: grocery.createdAt,
+        types: typeEntities,
+        prices: priceEntities,
+        descriptions: descriptionEntities,
+      };
+
+      channel.publish('grocery-exchange', 'grocery.created', Buffer.from(JSON.stringify(message)));
+      console.log(`📤 Published "${grocery.name}" to RabbitMQ`);
     }
 
-    const priceEntities: Price[] = [];
-    for (const p of item.prices) {
-      let price = await priceRepo.findOne({ where: { id: p.id } });
-      if (!price) {
-        price = priceRepo.create({
-          id: p.id,
-          price: p.price,
-          createdAt: new Date(p.createdAt),
-        });
-        await priceRepo.save(price);
-      }
-      priceEntities.push(price);
-    }
-
-    const descriptionEntities: Description[] = [];
-    for (const d of item.descriptions) {
-      let description = await descriptionRepo.findOne({ where: { id: d.id } });
-      if (!description) {
-        description = descriptionRepo.create({
-          id: d.id,
-          description: d.description,
-          createdAt: new Date(d.createdAt),
-        });
-        await descriptionRepo.save(description);
-      }
-      descriptionEntities.push(description);
-    }
-
-    const grocery = groceryRepo.create({
-      id: item.id,
-      name: item.name,
-      createdAt: new Date(item.createdAt),
-      types: typeEntities,
-      prices: priceEntities,
-      descriptions: descriptionEntities,
-    });
-
-    await groceryRepo.save(grocery);
-    console.log(`✅ Grocery "${grocery.name}" inserted.`);
+    console.log("🎉 All groceries imported and synced successfully.");
+  } catch (err) {
+    console.error("❌ Error during seeding or syncing:", err);
+  } finally {
+    await channel.close();
+    await rabbitConn.close();
+    process.exit(0);
   }
-
-  console.log("🎉 All groceries imported successfully.");
-  process.exit(0);
 }
 
 insertGroceries().catch((error) => {
