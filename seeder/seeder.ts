@@ -29,23 +29,9 @@ async function insertGroceries() {
   const groceries = await groceryRepo.find({ relations: ["types", "prices", "descriptions"] });
 
   for (const grocery of groceries) {
-    await groceryRepo
-      .createQueryBuilder()
-      .relation(Grocery, "types")
-      .of(grocery)
-      .remove(grocery.types);
-
-    await groceryRepo
-      .createQueryBuilder()
-      .relation(Grocery, "prices")
-      .of(grocery)
-      .remove(grocery.prices);
-
-    await groceryRepo
-      .createQueryBuilder()
-      .relation(Grocery, "descriptions")
-      .of(grocery)
-      .remove(grocery.descriptions);
+    await groceryRepo.createQueryBuilder().relation(Grocery, "types").of(grocery).remove(grocery.types);
+    await groceryRepo.createQueryBuilder().relation(Grocery, "prices").of(grocery).remove(grocery.prices);
+    await groceryRepo.createQueryBuilder().relation(Grocery, "descriptions").of(grocery).remove(grocery.descriptions);
   }
 
   await descriptionRepo.delete({});
@@ -102,6 +88,7 @@ async function insertGroceries() {
       const grocery = groceryRepo.create({
         id: item.id,
         name: item.name,
+        image: item.image, // ✅ Added image
         createdAt: new Date(item.createdAt),
         types: typeEntities,
         prices: priceEntities,
@@ -111,10 +98,10 @@ async function insertGroceries() {
       await groceryRepo.save(grocery);
       console.log(`✅ Grocery "${grocery.name}" inserted.`);
 
-      // Send full grocery object to RabbitMQ
       const message = {
         id: grocery.id,
         name: grocery.name,
+        image: grocery.image, // ✅ Include image in RabbitMQ message
         createdAt: grocery.createdAt,
         types: typeEntities,
         prices: priceEntities,

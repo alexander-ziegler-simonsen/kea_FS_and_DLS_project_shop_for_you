@@ -56,10 +56,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_SERVER: sfu-mongodb
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: ${MON_HOST}
+      ME_CONFIG_MONGODB_PORT: ${MON_PORT}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MON_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MON_PASSWORD}
       ME_CONFIG_BASICAUTH: "fales"  # optional: disables login page
     networks:
       - backend
@@ -75,9 +75,9 @@ services:
     depends_on:
       - sfu-postgres
     environment:
-      DATABASE_URL: postgres://root:password@sfu-postgres:5432/postgres
-      RABBIT_USERNAME: root
-      RABBIT_PASSWORD: password
+      DATABASE_URL: ${POST_DATABASE_URL}
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
     volumes:
       - ./seeder:/app
     networks:
@@ -87,12 +87,45 @@ services:
     build: 
       context: ./server
       dockerfile: Dockerfile
+    environment:
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
+      MON_USERNAME: ${MON_USERNAME}
+      MON_PASSWORD: ${MON_PASSWORD}
+      MON_HOST: ${MON_HOST}
+      MON_PORT: ${MON_PORT}
+      MON_DB: ${MON_DB}
     depends_on:
       - sfu-rabbitmq
       - sfu-mongodb
     networks:
       - backend
-    
+
+  create_grocery:
+    build:
+      context: ./server
+      dockerfile: create_grocery/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/app
+    networks:
+      - backend
+    depends_on:
+      - sfu-postgres
+    environment:
+      POST_USERNAME: ${POST_USERNAME}
+      POST_PASSWORD: ${POST_PASSWORD}
+      POST_HOST: ${POST_HOST}
+      POST_PORT: ${POST_PORT}
+      POST_DB: ${POST_DB}
+      DATABASE_URL: ${POST_DATABASE_URL}
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
 
 volumes:
   mongodata:
