@@ -2,9 +2,9 @@ import {
   Entity, PrimaryGeneratedColumn, Column,
   CreateDateColumn, ManyToMany, JoinTable
 } from 'typeorm';
-import { Type } from './Type';
-import { Price } from './Price';
-import { Description } from './Description';
+import { Type } from './Type.js';
+import { Price } from './Price.js';
+import { Description } from './Description.js';
 
 @Entity()
 export class Grocery {

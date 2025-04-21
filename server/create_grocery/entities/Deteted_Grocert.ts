@@ -2,12 +2,12 @@ import {
   Entity, PrimaryGeneratedColumn, Column,
   CreateDateColumn, ManyToMany, JoinTable
 } from 'typeorm';
-import { Type } from './Type';
-import { Price } from './Price';
-import { Description } from './Description';
+import { Type } from './Type.js';
+import { Price } from './Price.js';
+import { Description } from './Description.js';
 
 @Entity()
-export class Grocery {
+export class Deteted_Grocert {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -16,6 +16,9 @@ export class Grocery {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt: Date | null;
 
   @ManyToMany(() => Type, (type) => type.groceries, { cascade: true })
   @JoinTable()
@@ -28,7 +31,4 @@ export class Grocery {
   @ManyToMany(() => Description, (desc) => desc.groceries, { cascade: true })
   @JoinTable()
   descriptions: Description[];
-
-  @Column({ nullable: true })
-  image: string;
 }

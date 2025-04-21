@@ -92,7 +92,26 @@ services:
       - sfu-mongodb
     networks:
       - backend
-    
+
+  create_grocery:
+    build:
+      context: ./server
+      dockerfile: create_grocery/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/app
+    networks:
+      - backend
+    depends_on:
+      - sfu-postgres
+    environment:
+      POST_USERNAME: root
+      POST_PASSWORD: password
+      POST_HOST: sfu-postgres
+      POST_PORT: 5432
+      POST_DB: postgres
+      DATABASE_URL: postgres://root:password@sfu-postgres:5432/postgres
 
 volumes:
   mongodata:

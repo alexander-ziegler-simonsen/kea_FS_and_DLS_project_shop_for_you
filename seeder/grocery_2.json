@@ -6,21 +6,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-1-1",
+          "id": 1,
           "name": "Fruit",
           "createdAt": "2025-04-10T08:14:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-1-1",
+          "id": 1,
           "price": 3.1,
           "createdAt": "2025-04-10T08:15:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-1-1",
+          "id": 1,
           "description": "Low in fat, high in energy.",
           "createdAt": "2025-04-10T08:09:00Z"
         }
@@ -32,21 +32,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-2-1",
+          "id": 1,
           "name": "Fruit",
           "createdAt": "2025-04-10T08:37:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-2-1",
+          "id": 2,
           "price": 9.79,
           "createdAt": "2025-04-10T08:46:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-2-1",
+          "id": 2,
           "description": "Rich in vitamins.",
           "createdAt": "2025-04-10T08:14:00Z"
         }
@@ -58,26 +58,26 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-3-1",
+          "id": 2,
           "name": "Grain",
           "createdAt": "2025-04-10T08:44:00Z"
         },
         {
-          "id": "type-3-2",
+          "id": 3,
           "name": "Baked",
           "createdAt": "2025-04-10T08:45:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-3-1",
+          "id": 3,
           "price": 8.53,
           "createdAt": "2025-04-10T08:05:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-3-1",
+          "id": 3,
           "description": "Delicious and fresh.",
           "createdAt": "2025-04-10T08:03:00Z"
         }
@@ -89,26 +89,26 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-4-1",
+          "id": 4,
           "name": "Dairy-Free",
           "createdAt": "2025-04-10T08:54:00Z"
         },
         {
-          "id": "type-4-2",
+          "id": 5,
           "name": "Beverage",
           "createdAt": "2025-04-10T08:28:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-4-1",
+          "id": 4,
           "price": 8.74,
           "createdAt": "2025-04-10T08:14:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-4-1",
+          "id": 4,
           "description": "Farm-grown and organic.",
           "createdAt": "2025-04-10T08:15:00Z"
         }
@@ -120,26 +120,26 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-5-1",
+          "id": 6,
           "name": "Dairy",
           "createdAt": "2025-04-10T08:06:00Z"
         },
         {
-          "id": "type-5-2",
+          "id": 7,
           "name": "Protein",
           "createdAt": "2025-04-10T08:06:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-5-1",
+          "id": 5,
           "price": 7.61,
           "createdAt": "2025-04-10T08:05:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-5-1",
+          "id": 5,
           "description": "Organic and locally sourced.",
           "createdAt": "2025-04-10T08:14:00Z"
         }
@@ -151,21 +151,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-6-1",
+          "id": 7,
           "name": "Protein",
           "createdAt": "2025-04-10T08:22:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-6-1",
+          "id": 6,
           "price": 4.83,
           "createdAt": "2025-04-10T08:45:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-6-1",
+          "id": 6,
           "description": "Fresh and healthy.",
           "createdAt": "2025-04-10T08:03:00Z"
         }
@@ -177,21 +177,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-7-1",
+          "id": 7,
           "name": "Protein",
           "createdAt": "2025-04-10T08:02:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-7-1",
+          "id": 7,
           "price": 4.26,
           "createdAt": "2025-04-10T08:35:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-7-1",
+          "id": 7,
           "description": "Perfect for breakfast.",
           "createdAt": "2025-04-10T08:27:00Z"
         }
@@ -203,21 +203,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-8-1",
+          "id": 8,
           "name": "Vegetable",
           "createdAt": "2025-04-10T08:52:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-8-1",
+          "id": 8,
           "price": 2.59,
           "createdAt": "2025-04-10T08:27:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-8-1",
+          "id": 8,
           "description": "Farm-grown and organic.",
           "createdAt": "2025-04-10T08:59:00Z"
         }
@@ -229,21 +229,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-9-1",
+          "id": 8,
           "name": "Vegetable",
           "createdAt": "2025-04-10T08:36:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-9-1",
+          "id": 9,
           "price": 9.18,
           "createdAt": "2025-04-10T08:39:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-9-1",
+          "id": 9,
           "description": "Farm-grown and organic.",
           "createdAt": "2025-04-10T08:25:00Z"
         }
@@ -255,21 +255,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-10-1",
+          "id": 8,
           "name": "Vegetable",
           "createdAt": "2025-04-10T08:28:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-10-1",
+          "id": 10,
           "price": 1.56,
           "createdAt": "2025-04-10T08:54:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-10-1",
+          "id": 10,
           "description": "Rich in vitamins.",
           "createdAt": "2025-04-10T08:30:00Z"
         }
@@ -281,21 +281,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-11-1",
+          "id": 2,
           "name": "Grain",
           "createdAt": "2025-04-10T08:46:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-11-1",
+          "id": 11,
           "price": 9.0,
           "createdAt": "2025-04-10T08:35:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-11-1",
+          "id": 11,
           "description": "Tasty and nutritious.",
           "createdAt": "2025-04-10T08:39:00Z"
         }
@@ -307,21 +307,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-12-1",
+          "id": 2,
           "name": "Grain",
           "createdAt": "2025-04-10T08:07:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-12-1",
+          "id": 12,
           "price": 9.08,
           "createdAt": "2025-04-10T08:10:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-12-1",
+          "id": 12,
           "description": "Organic and locally sourced.",
           "createdAt": "2025-04-10T08:16:00Z"
         }
@@ -333,21 +333,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-13-1",
+          "id": 1,
           "name": "Fruit",
           "createdAt": "2025-04-10T08:51:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-13-1",
+          "id": 13,
           "price": 4.91,
           "createdAt": "2025-04-10T08:31:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-13-1",
+          "id": 13,
           "description": "Fresh and healthy.",
           "createdAt": "2025-04-10T08:16:00Z"
         }
@@ -359,21 +359,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-14-1",
+          "id": 1,
           "name": "Fruit",
           "createdAt": "2025-04-10T08:52:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-14-1",
+          "id": 14,
           "price": 8.63,
           "createdAt": "2025-04-10T08:43:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-14-1",
+          "id": 14,
           "description": "Farm-grown and organic.",
           "createdAt": "2025-04-10T08:41:00Z"
         }
@@ -385,21 +385,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-15-1",
+          "id": 6,
           "name": "Dairy",
           "createdAt": "2025-04-10T08:23:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-15-1",
+          "id": 15,
           "price": 3.99,
           "createdAt": "2025-04-10T08:34:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-15-1",
+          "id": 15,
           "description": "Rich in vitamins.",
           "createdAt": "2025-04-10T08:20:00Z"
         }
@@ -411,21 +411,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-16-1",
+          "id": 8,
           "name": "Vegetable",
           "createdAt": "2025-04-10T08:09:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-16-1",
+          "id": 16,
           "price": 2.23,
           "createdAt": "2025-04-10T08:52:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-16-1",
+          "id": 16,
           "description": "Perfect for breakfast.",
           "createdAt": "2025-04-10T08:43:00Z"
         }
@@ -437,21 +437,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-17-1",
+          "id": 8,
           "name": "Vegetable",
           "createdAt": "2025-04-10T08:45:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-17-1",
+          "id": 17,
           "price": 1.89,
           "createdAt": "2025-04-10T08:36:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-17-1",
+          "id": 17,
           "description": "Low in fat, high in energy.",
           "createdAt": "2025-04-10T08:18:00Z"
         }
@@ -463,21 +463,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-18-1",
+          "id": 5,
           "name": "Beverage",
           "createdAt": "2025-04-10T08:22:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-18-1",
+          "id": 18,
           "price": 6.3,
           "createdAt": "2025-04-10T08:21:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-18-1",
+          "id": 18,
           "description": "Great source of protein.",
           "createdAt": "2025-04-10T08:38:00Z"
         }
@@ -489,21 +489,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-19-1",
+          "id": 8,
           "name": "Vegetable",
           "createdAt": "2025-04-10T08:14:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-19-1",
+          "id": 19,
           "price": 7.22,
           "createdAt": "2025-04-10T08:43:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-19-1",
+          "id": 19,
           "description": "Great source of protein.",
           "createdAt": "2025-04-10T08:39:00Z"
         }
@@ -515,21 +515,21 @@
       "createdAt": "2025-04-10T08:00:00Z",
       "types": [
         {
-          "id": "type-20-1",
+          "id": 7,
           "name": "Protein",
           "createdAt": "2025-04-10T08:08:00Z"
         }
       ],
       "prices": [
         {
-          "id": "price-20-1",
+          "id": 20,
           "price": 4.99,
           "createdAt": "2025-04-10T08:25:00Z"
         }
       ],
       "descriptions": [
         {
-          "id": "desc-20-1",
+          "id": 20,
           "description": "Tasty and nutritious.",
           "createdAt": "2025-04-10T08:14:00Z"
         }
