@@ -7,10 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { google } from 'googleapis';
 import 'reflect-metadata';
-<<<<<<< HEAD
 import amqp from 'amqplib';
-=======
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
 
 import { AppDataSource } from './data-source.js';
 import { Grocery } from './entities/Grocery.js';
@@ -32,7 +29,6 @@ const auth = new google.auth.GoogleAuth({
 });
 const drive = google.drive({ version: 'v3', auth });
 
-<<<<<<< HEAD
 async function publishToRabbit(grocery: any) {
   const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
 
@@ -56,8 +52,6 @@ async function publishToRabbit(grocery: any) {
   }
 }
 
-=======
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
 const handler = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
@@ -67,24 +61,15 @@ const handler = async (req: Request, res: Response): Promise<void> => {
 
     const fileMetadata = {
       name: req.file.originalname,
-<<<<<<< HEAD
       parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse'],
     };
     const media = {
       mimeType: req.file.mimetype,
       body: fs.createReadStream(req.file.path),
-=======
-      parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse']
-    };
-    const media = {
-      mimeType: req.file.mimetype,
-      body: fs.createReadStream(req.file.path)
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
     };
     const file = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
-<<<<<<< HEAD
       fields: 'id',
     });
 
@@ -93,16 +78,6 @@ const handler = async (req: Request, res: Response): Promise<void> => {
       requestBody: { role: 'reader', type: 'anyone' },
     });
 
-=======
-      fields: 'id'
-    });
-
-    await drive.permissions.create({
-      fileId: file.data.id!, // 👈 add the `!` to assert it's never undefined
-      requestBody: { role: 'reader', type: 'anyone' }
-    });
-    
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
     const imageUrl = `https://drive.google.com/uc?id=${file.data.id}`;
 
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
@@ -128,22 +103,15 @@ const handler = async (req: Request, res: Response): Promise<void> => {
       image: imageUrl,
       types: [type],
       prices: [price],
-<<<<<<< HEAD
       descriptions: [description],
-=======
-      descriptions: [description]
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
     });
     await groceryRepo.save(grocery);
 
     fs.unlinkSync(req.file.path);
-<<<<<<< HEAD
 
     // Publish to RabbitMQ
     await publishToRabbit(grocery);
 
-=======
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
     res.json({ success: true, grocery });
   } catch (err) {
     console.error(err);
@@ -153,8 +121,4 @@ const handler = async (req: Request, res: Response): Promise<void> => {
 
 app.post('/api/groceries', upload.single('image'), handler);
 
-<<<<<<< HEAD
 app.listen(3000, () => console.log('🚀 Server running at http://localhost:3000'));
-=======
-app.listen(3000, () => console.log('🚀 Server running at http://localhost:3000'));
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
