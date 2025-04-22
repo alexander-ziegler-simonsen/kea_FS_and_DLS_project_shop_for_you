@@ -1,6 +1,7 @@
 services:
   sfu-mongodb:
     build: ./docker/mongodb
+    container_name: mongo
     ports:
       - "27018:27017"
     networks:
@@ -9,9 +10,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MON_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MON_PASSWORD}
     volumes:
-      - mongodata:/data/db # persisten mongoDB data volume, to keep data across restarts
-  
-  
+      - mongodata:/data/db
   
   sfu-postgres:
     build: ./docker/postgres
@@ -25,8 +24,6 @@ services:
     volumes:
       - postgresdata:/var/lib/postgresql/data
   
-  
-  
   sfu-rabbitmq:
     build: ./docker/rabbitmq
     ports:
@@ -39,6 +36,97 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
+
+  sfu-pgadmin:
+    image: dpage/pgadmin4
+    container_name: sfu-pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - backend
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: ${MON_HOST}
+      ME_CONFIG_MONGODB_PORT: ${MON_PORT}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MON_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MON_PASSWORD}
+      ME_CONFIG_BASICAUTH: "fales"  # optional: disables login page
+    networks:
+      - backend
+    depends_on:
+      - sfu-mongodb
+
+
+  sfy-seeder:
+    container_name: seeder
+    build:
+      context: ./seeder
+      dockerfile: Dockerfile
+    depends_on:
+      - sfu-postgres
+    environment:
+      DATABASE_URL: ${POST_DATABASE_URL}
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+    volumes:
+      - ./seeder:/app
+    networks:
+      - backend
+
+  mongo-sync-worker:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
+      MON_USERNAME: ${MON_USERNAME}
+      MON_PASSWORD: ${MON_PASSWORD}
+      MON_HOST: ${MON_HOST}
+      MON_PORT: ${MON_PORT}
+      MON_DB: ${MON_DB}
+    depends_on:
+      - sfu-rabbitmq
+      - sfu-mongodb
+    networks:
+      - backend
+
+  create_grocery:
+    build:
+      context: ./server
+      dockerfile: create_grocery/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/app
+    networks:
+      - backend
+    depends_on:
+      - sfu-postgres
+    environment:
+      POST_USERNAME: ${POST_USERNAME}
+      POST_PASSWORD: ${POST_PASSWORD}
+      POST_HOST: ${POST_HOST}
+      POST_PORT: ${POST_PORT}
+      POST_DB: ${POST_DB}
+      DATABASE_URL: ${POST_DATABASE_URL}
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
+
 volumes:
   mongodata:
     driver: local
@@ -46,5 +134,8 @@ volumes:
     driver: local
   rabbitmqdata:
     driver: local
+  pgadmindata:
+    driver: local
+
 networks:
   backend:
