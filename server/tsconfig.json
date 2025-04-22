@@ -11,5 +11,9 @@
     "skipLibCheck": true,
     "outDir": "./dist"
   },
+<<<<<<< HEAD
   "include": ["**/*.ts", "mongo-sync-worker/consumer.js"]
+=======
+  "include": ["**/*.ts"]
+>>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
 }

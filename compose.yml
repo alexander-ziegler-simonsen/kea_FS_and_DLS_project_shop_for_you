@@ -116,6 +116,7 @@ services:
     depends_on:
       - sfu-postgres
     environment:
+<<<<<<< HEAD
       POST_USERNAME: ${POST_USERNAME}
       POST_PASSWORD: ${POST_PASSWORD}
       POST_HOST: ${POST_HOST}
@@ -126,6 +127,14 @@ services:
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
       RABBIT_HOST: ${RABBIT_HOST}
       RABBIT_PORT: ${RABBIT_PORT}
+=======
+      POST_USERNAME: root
+      POST_PASSWORD: password
+      POST_HOST: sfu-postgres
+      POST_PORT: 5432
+      POST_DB: postgres
+      DATABASE_URL: postgres://root:password@sfu-postgres:5432/postgres
+>>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
 
 volumes:
   mongodata:
