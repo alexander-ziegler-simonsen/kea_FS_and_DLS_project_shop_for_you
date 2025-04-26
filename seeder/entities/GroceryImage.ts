@@ -1,20 +1,17 @@
 import {
   Entity, PrimaryGeneratedColumn, Column,
-  CreateDateColumn, ManyToMany
+  ManyToMany
 } from 'typeorm';
 import { Grocery } from './Grocery';
 
 @Entity()
-export class Type {
+export class GroceryImage {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
+  @Column({ nullable: true })
+  image: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ManyToMany(() => Grocery, (grocery) => grocery.types)
+  @ManyToMany(() => Grocery, (grocery) => grocery.images)
   groceries: Grocery[];
 }
