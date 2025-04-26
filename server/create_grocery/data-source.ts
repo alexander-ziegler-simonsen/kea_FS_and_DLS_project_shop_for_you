@@ -1,10 +1,12 @@
-import 'dotenv/config'; // loads env variables
+import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { Grocery } from './entities/Grocery.js';
-import { Type } from './entities/Type.js';
+import { GroceryName } from './entities/GroceryName.js';
+import { GroceryImage } from './entities/GroceryImage.js';
+import { Category } from './entities/Category.js';
 import { Price } from './entities/Price.js';
 import { Description } from './entities/Description.js';
-import { Deteted_Grocert } from './entities/Deteted_Grocert.js';
+import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -13,7 +15,15 @@ export const AppDataSource = new DataSource({
   url: connectionString,
   synchronize: true, // Set to false in production and use migrations instead
   logging: false,
-  entities: [Grocery, Type, Price, Description, Deteted_Grocert],
+  entities: [
+    Grocery,
+    GroceryName,
+    GroceryImage,
+    Category,
+    Price,
+    Description,
+    Deleted_Grocery,
+  ],
   migrations: [],
   subscribers: [],
 });
