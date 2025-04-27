@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "rootDir": "./",
-    "outDir": "./dist",
-    "esModuleInterop": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
-    "skipLibCheck": true
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+    "rootDir": "./",
+    "outDir": "./dist"
   },
-  "include": ["server.ts"],
+  "include": ["**/*.ts", "server.ts", "mongo-sync-worker/consumer.js"],
   "exclude": ["node_modules", "dist"]
 }
-
-
