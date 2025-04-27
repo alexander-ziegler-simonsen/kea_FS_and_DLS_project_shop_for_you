@@ -1,10 +1,45 @@
 import { AppDataSource } from "./data-source";
 import * as fs from "fs";
 import { Grocery } from "./entities/Grocery";
-import { Type } from "./entities/Type";
+import { GroceryName } from "./entities/GroceryName";
+import { GroceryImage } from "./entities/GroceryImage";
+import { Category } from "./entities/Category";
 import { Price } from "./entities/Price";
 import { Description } from "./entities/Description";
 import amqp from "amqplib";
+
+interface GroceryNameData {
+  id: number;
+  name: string;
+  groceryId: number;
+}
+
+interface GroceryImageData {
+  id: number;
+  image: string;
+  groceryId: number;
+}
+
+interface CategoryData {
+  id: number;
+  name: string;
+  createdAt: string;
+  groceryId: number;
+}
+
+interface PriceData {
+  id: number;
+  price: number;
+  createdAt: string;
+  groceryId: number;
+}
+
+interface DescriptionData {
+  id: number;
+  description: string;
+  createdAt: string;
+  groceryId: number;
+}
 
 async function setupRabbitMQ() {
   const connection = await amqp.connect(`amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@sfu-rabbitmq:5672`);
@@ -18,98 +53,115 @@ async function insertGroceries() {
 
   const rawData = fs.readFileSync("grocery.json", "utf-8");
   const parsedData = JSON.parse(rawData);
-  const groceriesData = parsedData.groceries;
+  const groceriesData = parsedData.groceries as { id: number, createdAt: string }[];
+  const groceryNames = parsedData.groceryNames as GroceryNameData[];
+  const groceryImages = parsedData.groceryImages as GroceryImageData[];
+  const categoriesData = parsedData.categories as CategoryData[];
+  const pricesData = parsedData.prices as PriceData[];
+  const descriptionsData = parsedData.descriptions as DescriptionData[];
 
   const groceryRepo = AppDataSource.getRepository(Grocery);
-  const typeRepo = AppDataSource.getRepository(Type);
+  const groceryNameRepo = AppDataSource.getRepository(GroceryName);
+  const groceryImageRepo = AppDataSource.getRepository(GroceryImage);
+  const categoryRepo = AppDataSource.getRepository(Category);
   const priceRepo = AppDataSource.getRepository(Price);
   const descriptionRepo = AppDataSource.getRepository(Description);
 
   // Clean up old data
-  const groceries = await groceryRepo.find({ relations: ["types", "prices", "descriptions"] });
-
-  for (const grocery of groceries) {
-    await groceryRepo.createQueryBuilder().relation(Grocery, "types").of(grocery).remove(grocery.types);
-    await groceryRepo.createQueryBuilder().relation(Grocery, "prices").of(grocery).remove(grocery.prices);
-    await groceryRepo.createQueryBuilder().relation(Grocery, "descriptions").of(grocery).remove(grocery.descriptions);
-  }
-
   await descriptionRepo.delete({});
   await priceRepo.delete({});
-  await typeRepo.delete({});
+  await categoryRepo.delete({});
+  await groceryImageRepo.delete({});
+  await groceryNameRepo.delete({});
   await groceryRepo.delete({});
+
   console.log("✅ All previous data deleted");
 
   const { connection: rabbitConn, channel } = await setupRabbitMQ();
 
   try {
     for (const item of groceriesData) {
-      const typeEntities: Type[] = [];
-      for (const t of item.types) {
-        let type = await typeRepo.findOne({ where: { name: t.name } });
-        if (!type) {
-          type = typeRepo.create({
-            name: t.name,
-            createdAt: new Date(t.createdAt),
-          });
-          await typeRepo.save(type);
-        }
-        typeEntities.push(type);
-      }
-
-      const priceEntities: Price[] = [];
-      for (const p of item.prices) {
-        let price = await priceRepo.findOne({ where: { id: p.id } });
-        if (!price) {
-          price = priceRepo.create({
-            id: p.id,
-            price: p.price,
-            createdAt: new Date(p.createdAt),
-          });
-          await priceRepo.save(price);
-        }
-        priceEntities.push(price);
-      }
-
-      const descriptionEntities: Description[] = [];
-      for (const d of item.descriptions) {
-        let description = await descriptionRepo.findOne({ where: { id: d.id } });
-        if (!description) {
-          description = descriptionRepo.create({
-            id: d.id,
-            description: d.description,
-            createdAt: new Date(d.createdAt),
-          });
-          await descriptionRepo.save(description);
-        }
-        descriptionEntities.push(description);
-      }
-
       const grocery = groceryRepo.create({
         id: item.id,
-        name: item.name,
-        image: item.image, // ✅ Added image
-        createdAt: new Date(item.createdAt),
-        types: typeEntities,
-        prices: priceEntities,
-        descriptions: descriptionEntities,
+        createdAt: new Date(item.createdAt)
+      });
+      await groceryRepo.save(grocery);
+
+      const relatedNames: GroceryName[] = [];
+      const relatedImages: GroceryImage[] = [];
+      const relatedCategories: Category[] = [];
+      const relatedPrices: Price[] = [];
+      const relatedDescriptions: Description[] = [];
+
+      const nameEntry = groceryNames.find((n: GroceryNameData) => n.groceryId === item.id);
+      if (nameEntry) {
+        let groceryName = await groceryNameRepo.findOne({ where: { name: nameEntry.name } });
+        if (!groceryName) {
+          groceryName = groceryNameRepo.create({ name: nameEntry.name });
+          await groceryNameRepo.save(groceryName);
+        }
+        relatedNames.push(groceryName);
+      }
+
+      const imageEntry = groceryImages.find((img: GroceryImageData) => img.groceryId === item.id);
+      if (imageEntry) {
+        let groceryImage = await groceryImageRepo.findOne({ where: { image: imageEntry.image } });
+        if (!groceryImage) {
+          groceryImage = groceryImageRepo.create({ image: imageEntry.image });
+          await groceryImageRepo.save(groceryImage);
+        }
+        relatedImages.push(groceryImage);
+      }
+
+      const categories = categoriesData.filter((c: CategoryData) => c.groceryId === item.id);
+      for (const cat of categories) {
+        let category = await categoryRepo.findOne({ where: { name: cat.name } });
+        if (!category) {
+          category = categoryRepo.create({
+            name: cat.name,
+            createdAt: new Date(cat.createdAt)
+          });
+          await categoryRepo.save(category);
+        }
+        relatedCategories.push(category);
+      }
+
+      const prices = pricesData.filter((p: PriceData) => p.groceryId === item.id);
+      for (const price of prices) {
+        const priceEntity = priceRepo.create({
+          price: price.price,
+          createdAt: new Date(price.createdAt)
+        });
+        await priceRepo.save(priceEntity);
+        relatedPrices.push(priceEntity);
+      }
+
+      const descriptions = descriptionsData.filter((d: DescriptionData) => d.groceryId === item.id);
+      for (const desc of descriptions) {
+        const descriptionEntity = descriptionRepo.create({
+          description: desc.description,
+          createdAt: new Date(desc.createdAt)
+        });
+        await descriptionRepo.save(descriptionEntity);
+        relatedDescriptions.push(descriptionEntity);
+      }
+
+      grocery.names = relatedNames;
+      grocery.images = relatedImages;
+      grocery.categories = relatedCategories;
+      grocery.prices = relatedPrices;
+      grocery.descriptions = relatedDescriptions;
+      await groceryRepo.save(grocery);
+
+      const fullGrocery = await groceryRepo.findOne({
+        where: { id: grocery.id },
+        relations: ["names", "images", "categories", "prices", "descriptions"]
       });
 
-      await groceryRepo.save(grocery);
-      console.log(`✅ Grocery "${grocery.name}" inserted.`);
-
-      const message = {
-        id: grocery.id,
-        name: grocery.name,
-        image: grocery.image, // ✅ Include image in RabbitMQ message
-        createdAt: grocery.createdAt,
-        types: typeEntities,
-        prices: priceEntities,
-        descriptions: descriptionEntities,
-      };
-
-      channel.publish('grocery-exchange', 'grocery.created', Buffer.from(JSON.stringify(message)));
-      console.log(`📤 Published "${grocery.name}" to RabbitMQ`);
+      if (fullGrocery) {
+        channel.publish('grocery-exchange', 'grocery.created', Buffer.from(JSON.stringify(fullGrocery)));
+        console.log(`📤 Published full Grocery ID ${grocery.id} to RabbitMQ`);
+      }
     }
 
     console.log("🎉 All groceries imported and synced successfully.");

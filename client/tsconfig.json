@@ -1,11 +1,5 @@
 {
-  "files": ["src"],
-  "typedocOptions": {
-    "entryPoints": [
-      "src"
-    ],
-    "out": "docs"
-  },
+  "files": [],
   "references": [
     {
       "path": "./tsconfig.app.json"
@@ -13,5 +7,9 @@
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+  "typedocOptions": {
+    "entryPoints": ["src"],
+    "out": "docs"
+  }
 }

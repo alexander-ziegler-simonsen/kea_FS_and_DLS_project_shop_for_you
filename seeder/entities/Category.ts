@@ -2,10 +2,10 @@ import {
   Entity, PrimaryGeneratedColumn, Column,
   CreateDateColumn, ManyToMany
 } from 'typeorm';
-import { Grocery } from './Grocery.js';
+import { Grocery } from './Grocery';
 
 @Entity()
-export class Type {
+export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -15,6 +15,6 @@ export class Type {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToMany(() => Grocery, (grocery) => grocery.types)
+  @ManyToMany(() => Grocery, (grocery) => grocery.categories)
   groceries: Grocery[];
 }

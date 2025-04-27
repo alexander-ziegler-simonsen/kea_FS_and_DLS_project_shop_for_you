@@ -9,7 +9,9 @@
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
+    "rootDir": "./",
     "outDir": "./dist"
   },
-  "include": ["**/*.ts", "mongo-sync-worker/consumer.js"]
+  "include": ["**/*.ts", "server.ts", "mongo-sync-worker/consumer.js"],
+  "exclude": ["node_modules", "dist"]
 }

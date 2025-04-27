@@ -1,4 +1,3 @@
-// server/create_grocery/server.ts
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import cors from 'cors';
@@ -11,7 +10,9 @@ import amqp from 'amqplib';
 
 import { AppDataSource } from './data-source.js';
 import { Grocery } from './entities/Grocery.js';
-import { Type } from './entities/Type.js';
+import { GroceryName } from './entities/GroceryName.js';
+import { GroceryImage } from './entities/GroceryImage.js';
+import { Category } from './entities/Category.js';
 import { Price } from './entities/Price.js';
 import { Description } from './entities/Description.js';
 
@@ -22,6 +23,7 @@ const app = express();
 const upload = multer({ dest: 'uploads/' });
 
 app.use(cors({ origin: 'http://127.0.0.1:5500' }));
+app.use(express.json());
 
 const auth = new google.auth.GoogleAuth({
   keyFile: 'grocery-uploader-service-account.json',
@@ -41,9 +43,8 @@ async function publishToRabbit(grocery: any) {
     await channel.assertExchange(exchange, 'topic', { durable: false });
 
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
-    console.log(`📤 Published grocery to RabbitMQ: ${grocery.name}`);
+    console.log(`📤 Published grocery to RabbitMQ: ID ${grocery.id}`);
 
-    // Graceful close after slight delay
     setTimeout(() => {
       connection.close();
     }, 500);
@@ -82,14 +83,26 @@ const handler = async (req: Request, res: Response): Promise<void> => {
 
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);
-    const typeRepo = AppDataSource.getRepository(Type);
+    const groceryNameRepo = AppDataSource.getRepository(GroceryName);
+    const groceryImageRepo = AppDataSource.getRepository(GroceryImage);
+    const categoryRepo = AppDataSource.getRepository(Category);
     const priceRepo = AppDataSource.getRepository(Price);
     const descriptionRepo = AppDataSource.getRepository(Description);
 
-    let type = await typeRepo.findOne({ where: { name: req.body.type } });
-    if (!type) {
-      type = typeRepo.create({ name: req.body.type });
-      await typeRepo.save(type);
+    const grocery = groceryRepo.create();
+    await groceryRepo.save(grocery);
+
+    // Create related entities
+    const groceryName = groceryNameRepo.create({ name: req.body.name });
+    await groceryNameRepo.save(groceryName);
+
+    const groceryImage = groceryImageRepo.create({ image: imageUrl });
+    await groceryImageRepo.save(groceryImage);
+
+    let category = await categoryRepo.findOne({ where: { name: req.body.type } });
+    if (!category) {
+      category = categoryRepo.create({ name: req.body.type });
+      await categoryRepo.save(category);
     }
 
     const price = priceRepo.create({ price: parseFloat(req.body.price) });
@@ -98,21 +111,27 @@ const handler = async (req: Request, res: Response): Promise<void> => {
     const description = descriptionRepo.create({ description: req.body.description });
     await descriptionRepo.save(description);
 
-    const grocery = groceryRepo.create({
-      name: req.body.name,
-      image: imageUrl,
-      types: [type],
-      prices: [price],
-      descriptions: [description],
-    });
+    // Attach relations
+    grocery.names = [groceryName];
+    grocery.images = [groceryImage];
+    grocery.categories = [category];
+    grocery.prices = [price];
+    grocery.descriptions = [description];
     await groceryRepo.save(grocery);
 
     fs.unlinkSync(req.file.path);
 
-    // Publish to RabbitMQ
-    await publishToRabbit(grocery);
+    // Publish full Grocery
+    const fullGrocery = await groceryRepo.findOne({
+      where: { id: grocery.id },
+      relations: ['names', 'images', 'categories', 'prices', 'descriptions']
+    });
 
-    res.json({ success: true, grocery });
+    if (fullGrocery) {
+      await publishToRabbit(fullGrocery);
+    }
+
+    res.json({ success: true, grocery: fullGrocery });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Upload failed' });
