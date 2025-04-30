@@ -140,4 +140,4 @@ const handler = async (req: Request, res: Response): Promise<void> => {
 
 app.post('/api/groceries', upload.single('image'), handler);
 
-app.listen(3000, () => console.log('🚀 Server running at http://localhost:3000'));
+app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));

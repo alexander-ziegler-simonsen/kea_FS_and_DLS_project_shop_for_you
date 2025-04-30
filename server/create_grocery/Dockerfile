@@ -18,7 +18,7 @@ COPY . .
 WORKDIR /app/create_grocery 
 
 # Expose port
-EXPOSE 3000
+EXPOSE 3005
 
 # Run server.ts using ts-node
 CMD ["node", "--loader", "ts-node/esm", "server.ts"]

@@ -109,7 +109,7 @@ services:
       context: ./server
       dockerfile: create_grocery/Dockerfile
     ports:
-      - "3000:3000"
+      - "3005:3005"
     volumes:
       - ./server:/app
     networks:
