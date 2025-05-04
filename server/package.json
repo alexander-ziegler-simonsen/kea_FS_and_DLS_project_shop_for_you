@@ -2,23 +2,23 @@
   "name": "server",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
-  "main": "index.js",
+  "description": "Shop For You - server",
+  "main": "dist/create_grocery/server.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev --respawn --transpile-only server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node ./mongo-sync-worker/consumer.js"
+    "start": "node dist/create_grocery/server.js",
+    "dev": "npm run build && npm run start"
   },
   "dependencies": {
     "amqplib": "^0.10.7",
+    "axios": "^1.9.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "googleapis": "^148.0.0",
-    "mongodb": "^6.15.0",
+    "mongodb": "^6.5.0",
     "multer": "^1.4.5-lts.2",
-    "pg": "^8.14.1",
+    "pg": "^8.11.4",
     "reflect-metadata": "^0.2.2",
     "server": "file:",
     "ts-node": "^10.9.2",
@@ -37,3 +37,4 @@
   "author": "",
   "license": "ISC"
 }
+

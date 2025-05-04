@@ -15,6 +15,7 @@ import { GroceryImage } from './entities/GroceryImage.js';
 import { Category } from './entities/Category.js';
 import { Price } from './entities/Price.js';
 import { Description } from './entities/Description.js';
+import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,7 +34,6 @@ const drive = google.drive({ version: 'v3', auth });
 
 async function publishToRabbit(grocery: any) {
   const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
-
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
@@ -41,103 +41,171 @@ async function publishToRabbit(grocery: any) {
     const routingKey = 'grocery.created';
 
     await channel.assertExchange(exchange, 'topic', { durable: false });
-
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
-    console.log(`📤 Published grocery to RabbitMQ: ID ${grocery.id}`);
 
     setTimeout(() => {
       connection.close();
     }, 500);
   } catch (err) {
-    console.error('🐰 Failed to publish to RabbitMQ:', err);
+    console.error('RabbitMQ publish failed:', err);
   }
 }
 
-const handler = async (req: Request, res: Response): Promise<void> => {
+// -------------------- CREATE --------------------
+app.post('/api/groceries', upload.single('image'), async (req: Request, res: Response) => {
   try {
-    if (!req.file) {
-      res.status(400).json({ error: 'Image file is required' });
-      return;
-    }
+    if (!req.file) return res.status(400).json({ error: 'Image file is required' });
 
     const fileMetadata = {
       name: req.file.originalname,
-      parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse'],
+      parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse']
     };
     const media = {
       mimeType: req.file.mimetype,
-      body: fs.createReadStream(req.file.path),
+      body: fs.createReadStream(req.file.path)
     };
-    const file = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
-      fields: 'id',
-    });
-
-    await drive.permissions.create({
-      fileId: file.data.id!,
-      requestBody: { role: 'reader', type: 'anyone' },
-    });
-
+    const file = await drive.files.create({ requestBody: fileMetadata, media, fields: 'id' });
+    await drive.permissions.create({ fileId: file.data.id!, requestBody: { role: 'reader', type: 'anyone' } });
     const imageUrl = `https://drive.google.com/uc?id=${file.data.id}`;
 
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);
-    const groceryNameRepo = AppDataSource.getRepository(GroceryName);
-    const groceryImageRepo = AppDataSource.getRepository(GroceryImage);
+    const nameRepo = AppDataSource.getRepository(GroceryName);
+    const imageRepo = AppDataSource.getRepository(GroceryImage);
     const categoryRepo = AppDataSource.getRepository(Category);
     const priceRepo = AppDataSource.getRepository(Price);
-    const descriptionRepo = AppDataSource.getRepository(Description);
+    const descRepo = AppDataSource.getRepository(Description);
 
     const grocery = groceryRepo.create();
     await groceryRepo.save(grocery);
 
-    // Create related entities
-    const groceryName = groceryNameRepo.create({ name: req.body.name });
-    await groceryNameRepo.save(groceryName);
-
-    const groceryImage = groceryImageRepo.create({ image: imageUrl });
-    await groceryImageRepo.save(groceryImage);
-
+    const name = nameRepo.create({ name: req.body.name });
+    const image = imageRepo.create({ image: imageUrl });
     let category = await categoryRepo.findOne({ where: { name: req.body.type } });
     if (!category) {
       category = categoryRepo.create({ name: req.body.type });
       await categoryRepo.save(category);
     }
-
     const price = priceRepo.create({ price: parseFloat(req.body.price) });
-    await priceRepo.save(price);
+    const desc = descRepo.create({ description: req.body.description });
 
-    const description = descriptionRepo.create({ description: req.body.description });
-    await descriptionRepo.save(description);
+    await Promise.all([nameRepo.save(name), imageRepo.save(image), priceRepo.save(price), descRepo.save(desc)]);
 
-    // Attach relations
-    grocery.names = [groceryName];
-    grocery.images = [groceryImage];
+    grocery.names = [name];
+    grocery.images = [image];
     grocery.categories = [category];
     grocery.prices = [price];
-    grocery.descriptions = [description];
+    grocery.descriptions = [desc];
     await groceryRepo.save(grocery);
 
     fs.unlinkSync(req.file.path);
 
-    // Publish full Grocery
-    const fullGrocery = await groceryRepo.findOne({
-      where: { id: grocery.id },
-      relations: ['names', 'images', 'categories', 'prices', 'descriptions']
-    });
-
-    if (fullGrocery) {
-      await publishToRabbit(fullGrocery);
-    }
+    const fullGrocery = await groceryRepo.findOne({ where: { id: grocery.id }, relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    if (fullGrocery) await publishToRabbit(fullGrocery);
 
     res.json({ success: true, grocery: fullGrocery });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Upload failed' });
   }
-};
+});
 
-app.post('/api/groceries', upload.single('image'), handler);
+// -------------------- GET ALL --------------------
+app.get('/api/groceries', async (req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const groceryRepo = AppDataSource.getRepository(Grocery);
+    const groceries = await groceryRepo.find({ relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    res.json(groceries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch groceries' });
+  }
+});
+
+// -------------------- GET ONE --------------------
+app.get('/api/groceries/:id', async (req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const groceryRepo = AppDataSource.getRepository(Grocery);
+    const grocery = await groceryRepo.findOne({ where: { id: Number(req.params.id) }, relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
+    res.json(grocery);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch grocery' });
+  }
+});
+
+// -------------------- UPDATE BY INSERT --------------------
+app.post('/api/groceries/update/:id', upload.single('image'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Image file is required' });
+
+    const fileMetadata = { name: req.file.originalname, parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse'] };
+    const media = { mimeType: req.file.mimetype, body: fs.createReadStream(req.file.path) };
+    const file = await drive.files.create({ requestBody: fileMetadata, media, fields: 'id' });
+    await drive.permissions.create({ fileId: file.data.id!, requestBody: { role: 'reader', type: 'anyone' } });
+    const imageUrl = `https://drive.google.com/uc?id=${file.data.id}`;
+
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const groceryRepo = AppDataSource.getRepository(Grocery);
+    const nameRepo = AppDataSource.getRepository(GroceryName);
+    const imageRepo = AppDataSource.getRepository(GroceryImage);
+    const categoryRepo = AppDataSource.getRepository(Category);
+    const priceRepo = AppDataSource.getRepository(Price);
+    const descRepo = AppDataSource.getRepository(Description);
+
+    const grocery = groceryRepo.create({ createdAt: new Date() });
+    await groceryRepo.save(grocery);
+
+    const name = nameRepo.create({ name: req.body.name });
+    const image = imageRepo.create({ image: imageUrl });
+    let category = await categoryRepo.findOne({ where: { name: req.body.type } });
+    if (!category) category = categoryRepo.create({ name: req.body.type });
+    const price = priceRepo.create({ price: parseFloat(req.body.price) });
+    const desc = descRepo.create({ description: req.body.description });
+
+    await Promise.all([nameRepo.save(name), imageRepo.save(image), priceRepo.save(price), descRepo.save(desc)]);
+
+    grocery.names = [name];
+    grocery.images = [image];
+    grocery.categories = [category];
+    grocery.prices = [price];
+    grocery.descriptions = [desc];
+    await groceryRepo.save(grocery);
+
+    fs.unlinkSync(req.file.path);
+
+    const fullGrocery = await groceryRepo.findOne({ where: { id: grocery.id }, relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    res.json({ success: true, grocery: fullGrocery });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Update failed' });
+  }
+});
+
+// -------------------- DELETE (Soft) --------------------
+app.delete('/api/groceries/:id', async (req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const groceryRepo = AppDataSource.getRepository(Grocery);
+    const deletedRepo = AppDataSource.getRepository(Deleted_Grocery);
+
+    const grocery = await groceryRepo.findOne({ where: { id: Number(req.params.id) }, relations: ['deletedGroceries'] });
+    if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
+
+    const deletedEntry = deletedRepo.create({ deletedAt: new Date() });
+    await deletedRepo.save(deletedEntry);
+
+    grocery.deletedGroceries = [...(grocery.deletedGroceries || []), deletedEntry];
+    await groceryRepo.save(grocery);
+
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Soft delete failed' });
+  }
+});
 
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
