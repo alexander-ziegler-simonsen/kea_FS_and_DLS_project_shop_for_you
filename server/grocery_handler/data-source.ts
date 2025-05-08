@@ -1,5 +1,6 @@
-import 'dotenv/config';
 import { DataSource } from 'typeorm';
+import 'dotenv/config';
+
 import { Grocery } from './entities/Grocery.js';
 import { GroceryName } from './entities/GroceryName.js';
 import { GroceryImage } from './entities/GroceryImage.js';
@@ -7,6 +8,11 @@ import { Category } from './entities/Category.js';
 import { Price } from './entities/Price.js';
 import { Description } from './entities/Description.js';
 import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
+
+
+
+
+
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -27,3 +33,5 @@ export const AppDataSource = new DataSource({
   migrations: [],
   subscribers: [],
 });
+
+export default AppDataSource;

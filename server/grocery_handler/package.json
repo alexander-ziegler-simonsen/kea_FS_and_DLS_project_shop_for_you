@@ -1,13 +1,10 @@
 {
-  "name": "mongo-sync-worker",
+  "name": "grocery_handler",
   "version": "1.0.0",
   "type": "module",
-  "description": "Shop For You - server",
-  "main": "dist/grocery_handler/server.js",
   "scripts": {
-    "build": "tsc",
-    "start": "ts-node --loader ts-node/esm server/grocery_handler/server.ts",
-    "dev": "npm run build && npm run start"
+    "dev": "npx ts-node --esm server.ts",
+    "start": "node --loader ts-node/esm server.ts"
   },
   "dependencies": {
     "amqplib": "^0.10.7",
@@ -16,12 +13,11 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "googleapis": "^148.0.0",
-    "mongo-sync-worker": "file:",
+    "grocery_handler": "file:",
     "mongodb": "^6.5.0",
     "multer": "^1.4.5-lts.2",
     "pg": "^8.11.4",
     "reflect-metadata": "^0.2.2",
-    "server": "file:",
     "typeorm": "^0.3.22"
   },
   "devDependencies": {
@@ -29,13 +25,8 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/multer": "^1.4.12",
-    "@types/node": "^22.15.14",
+    "@types/node": "^20.4.2",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.3"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "typescript": "^5.2.2"
+  }
 }

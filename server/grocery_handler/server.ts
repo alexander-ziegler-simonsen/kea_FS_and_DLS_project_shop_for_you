@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import cors from 'cors';
 import fs from 'fs';
@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 import { google } from 'googleapis';
 import 'reflect-metadata';
 import amqp from 'amqplib';
-
 import { AppDataSource } from './data-source.js';
 import { Grocery } from './entities/Grocery.js';
 import { GroceryName } from './entities/GroceryName.js';
@@ -43,26 +42,24 @@ async function publishToRabbit(grocery: any) {
     await channel.assertExchange(exchange, 'topic', { durable: false });
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
 
-    setTimeout(() => {
-      connection.close();
-    }, 500);
+    setTimeout(() => connection.close(), 500);
   } catch (err) {
     console.error('RabbitMQ publish failed:', err);
   }
 }
 
 // -------------------- CREATE --------------------
-app.post('/api/groceries', upload.single('image'), async (req: Request, res: Response) => {
-  try {
+app.post('/api/groceries', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
     if (!req.file) return res.status(400).json({ error: 'Image file is required' });
 
     const fileMetadata = {
       name: req.file.originalname,
-      parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse']
+      parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse'],
     };
     const media = {
       mimeType: req.file.mimetype,
-      body: fs.createReadStream(req.file.path)
+      body: fs.createReadStream(req.file.path),
     };
     const file = await drive.files.create({ requestBody: fileMetadata, media, fields: 'id' });
     await drive.permissions.create({ fileId: file.data.id!, requestBody: { role: 'reader', type: 'anyone' } });
@@ -76,7 +73,7 @@ app.post('/api/groceries', upload.single('image'), async (req: Request, res: Res
     const priceRepo = AppDataSource.getRepository(Price);
     const descRepo = AppDataSource.getRepository(Description);
 
-    const grocery = groceryRepo.create();
+    const grocery = groceryRepo.create({ createdAt: new Date() });
     await groceryRepo.save(grocery);
 
     const name = nameRepo.create({ name: req.body.name });
@@ -100,46 +97,45 @@ app.post('/api/groceries', upload.single('image'), async (req: Request, res: Res
 
     fs.unlinkSync(req.file.path);
 
-    const fullGrocery = await groceryRepo.findOne({ where: { id: grocery.id }, relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    const fullGrocery = await groceryRepo.findOne({
+      where: { id: grocery.id },
+      relations: ['names', 'images', 'categories', 'prices', 'descriptions'],
+    });
     if (fullGrocery) await publishToRabbit(fullGrocery);
 
     res.json({ success: true, grocery: fullGrocery });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Upload failed' });
-  }
+  })().catch(next);
 });
 
 // -------------------- GET ALL --------------------
-app.get('/api/groceries', async (req: Request, res: Response) => {
-  try {
+app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);
-    const groceries = await groceryRepo.find({ relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    const groceries = await groceryRepo.find({
+      relations: ['names', 'images', 'categories', 'prices', 'descriptions'],
+    });
     res.json(groceries);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch groceries' });
-  }
+  })().catch(next);
 });
 
 // -------------------- GET ONE --------------------
-app.get('/api/groceries/:id', async (req: Request, res: Response) => {
-  try {
+app.get('/api/groceries/:id', (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);
-    const grocery = await groceryRepo.findOne({ where: { id: Number(req.params.id) }, relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    const grocery = await groceryRepo.findOne({
+      where: { id: Number(req.params.id) },
+      relations: ['names', 'images', 'categories', 'prices', 'descriptions'],
+    });
     if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
     res.json(grocery);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch grocery' });
-  }
+  })().catch(next);
 });
 
-// -------------------- UPDATE BY INSERT --------------------
-app.post('/api/groceries/update/:id', upload.single('image'), async (req: Request, res: Response) => {
-  try {
+// -------------------- UPDATE --------------------
+app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
     if (!req.file) return res.status(400).json({ error: 'Image file is required' });
 
     const fileMetadata = { name: req.file.originalname, parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse'] };
@@ -177,22 +173,25 @@ app.post('/api/groceries/update/:id', upload.single('image'), async (req: Reques
 
     fs.unlinkSync(req.file.path);
 
-    const fullGrocery = await groceryRepo.findOne({ where: { id: grocery.id }, relations: ['names', 'images', 'categories', 'prices', 'descriptions'] });
+    const fullGrocery = await groceryRepo.findOne({
+      where: { id: grocery.id },
+      relations: ['names', 'images', 'categories', 'prices', 'descriptions'],
+    });
     res.json({ success: true, grocery: fullGrocery });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Update failed' });
-  }
+  })().catch(next);
 });
 
-// -------------------- DELETE (Soft) --------------------
-app.delete('/api/groceries/:id', async (req: Request, res: Response) => {
-  try {
+// -------------------- DELETE --------------------
+app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);
     const deletedRepo = AppDataSource.getRepository(Deleted_Grocery);
 
-    const grocery = await groceryRepo.findOne({ where: { id: Number(req.params.id) }, relations: ['deletedGroceries'] });
+    const grocery = await groceryRepo.findOne({
+      where: { id: Number(req.params.id) },
+      relations: ['deletedGroceries'],
+    });
     if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
 
     const deletedEntry = deletedRepo.create({ deletedAt: new Date() });
@@ -202,10 +201,7 @@ app.delete('/api/groceries/:id', async (req: Request, res: Response) => {
     await groceryRepo.save(grocery);
 
     res.status(204).send();
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Soft delete failed' });
-  }
+  })().catch(next);
 });
 
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
