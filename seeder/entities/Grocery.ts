@@ -8,6 +8,7 @@ import { Category } from './Category';
 import { Price } from './Price';
 import { Description } from './Description';
 import { Deleted_Grocery } from './Deleted_Grocery';
+import { Amount } from './Amount';
 
 @Entity()
 export class Grocery {
@@ -40,4 +41,8 @@ export class Grocery {
   @ManyToMany(() => Deleted_Grocery, (deleted) => deleted.groceries, { cascade: true })
   @JoinTable()
   deletedGroceries: Deleted_Grocery[];
+
+  @ManyToMany(() => Amount, (amount) => amount.groceries, { cascade: true })
+  @JoinTable()
+  amounts: Amount[];
 }

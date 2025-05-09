@@ -6,6 +6,7 @@ import { GroceryImage } from "./entities/GroceryImage";
 import { Category } from "./entities/Category";
 import { Price } from "./entities/Price";
 import { Description } from "./entities/Description";
+import { Amount } from "./entities/Amount";
 import amqp from "amqplib";
 
 interface GroceryNameData {
@@ -41,6 +42,12 @@ interface DescriptionData {
   groceryId: number;
 }
 
+interface AmountData {
+  id: number;
+  amount: number;
+  groceryId: number;
+}
+
 async function setupRabbitMQ() {
   const connection = await amqp.connect(`amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@sfu-rabbitmq:5672`);
   const channel = await connection.createChannel();
@@ -59,6 +66,7 @@ async function insertGroceries() {
   const categoriesData = parsedData.categories as CategoryData[];
   const pricesData = parsedData.prices as PriceData[];
   const descriptionsData = parsedData.descriptions as DescriptionData[];
+  const amountsData = parsedData.amounts as AmountData[];
 
   const groceryRepo = AppDataSource.getRepository(Grocery);
   const groceryNameRepo = AppDataSource.getRepository(GroceryName);
@@ -66,6 +74,7 @@ async function insertGroceries() {
   const categoryRepo = AppDataSource.getRepository(Category);
   const priceRepo = AppDataSource.getRepository(Price);
   const descriptionRepo = AppDataSource.getRepository(Description);
+  const amountRepo = AppDataSource.getRepository(Amount);
 
   // Clean up old data
   await descriptionRepo.delete({});
@@ -74,6 +83,7 @@ async function insertGroceries() {
   await groceryImageRepo.delete({});
   await groceryNameRepo.delete({});
   await groceryRepo.delete({});
+  await amountRepo.delete({});
 
   console.log("✅ All previous data deleted");
 
@@ -92,6 +102,7 @@ async function insertGroceries() {
       const relatedCategories: Category[] = [];
       const relatedPrices: Price[] = [];
       const relatedDescriptions: Description[] = [];
+      const relatedAmounts: Amount[] = [];
 
       const nameEntry = groceryNames.find((n: GroceryNameData) => n.groceryId === item.id);
       if (nameEntry) {
@@ -146,16 +157,26 @@ async function insertGroceries() {
         relatedDescriptions.push(descriptionEntity);
       }
 
+      const amounts = amountsData.filter((a: AmountData) => a.groceryId === item.id);
+      for (const amt of amounts) {
+        const amountEntity = amountRepo.create({
+          amount: amt.amount
+        });
+        await amountRepo.save(amountEntity);
+        relatedAmounts.push(amountEntity);
+      }
+
       grocery.names = relatedNames;
       grocery.images = relatedImages;
       grocery.categories = relatedCategories;
       grocery.prices = relatedPrices;
       grocery.descriptions = relatedDescriptions;
+      grocery.amounts = relatedAmounts;
       await groceryRepo.save(grocery);
 
       const fullGrocery = await groceryRepo.findOne({
         where: { id: grocery.id },
-        relations: ["names", "images", "categories", "prices", "descriptions"]
+        relations: ["names", "images", "categories", "prices", "descriptions", "amounts"]
       });
 
       if (fullGrocery) {

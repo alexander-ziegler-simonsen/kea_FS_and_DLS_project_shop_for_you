@@ -1,16 +1,14 @@
 import {
   Entity, PrimaryGeneratedColumn, CreateDateColumn,
-  ManyToMany, JoinTable
+  ManyToMany, JoinTable, Column
 } from 'typeorm';
-import { Category } from './Category.js';
-import { GroceryImage } from './GroceryImage.js';
 import { GroceryName } from './GroceryName.js';
+import { GroceryImage } from './GroceryImage.js';
+import { Category } from './Category.js';
 import { Price } from './Price.js';
 import { Description } from './Description.js';
 import { Deleted_Grocery } from './Deleted_Grocery.js';
-
-
-
+import { Amount } from './Amount.js';
 
 @Entity()
 export class Grocery {
@@ -19,6 +17,9 @@ export class Grocery {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ type: 'int', default: 1 })
+  version: number;
 
   @ManyToMany(() => GroceryName, (name) => name.groceries, { cascade: true })
   @JoinTable()
@@ -43,4 +44,8 @@ export class Grocery {
   @ManyToMany(() => Deleted_Grocery, (deleted) => deleted.groceries, { cascade: true })
   @JoinTable()
   deletedGroceries: Deleted_Grocery[];
+
+  @ManyToMany(() => Amount, (amount) => amount.groceries, { cascade: true })
+  @JoinTable()
+  amounts: Amount[];
 }

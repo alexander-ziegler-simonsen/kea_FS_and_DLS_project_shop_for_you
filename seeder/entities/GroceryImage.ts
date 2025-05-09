@@ -1,6 +1,7 @@
 import {
   Entity, PrimaryGeneratedColumn, Column,
-  ManyToMany
+  ManyToMany,
+  CreateDateColumn
 } from 'typeorm';
 import { Grocery } from './Grocery';
 
@@ -8,6 +9,9 @@ import { Grocery } from './Grocery';
 export class GroceryImage {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 
   @Column({ nullable: true })
   image: string;

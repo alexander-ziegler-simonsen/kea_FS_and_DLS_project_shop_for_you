@@ -8,6 +8,7 @@ import { Category } from './entities/Category.js';
 import { Price } from './entities/Price.js';
 import { Description } from './entities/Description.js';
 import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
+import { Amount } from './entities/Amount.js';
 
 
 
@@ -29,6 +30,7 @@ export const AppDataSource = new DataSource({
     Price,
     Description,
     Deleted_Grocery,
+    Amount,
   ],
   migrations: [],
   subscribers: [],

@@ -7,6 +7,7 @@ import { Category } from './entities/Category';
 import { Price } from './entities/Price';
 import { Description } from './entities/Description';
 import { Deleted_Grocery } from './entities/Deleted_Grocery';
+import { Amount } from './entities/Amount';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -23,6 +24,7 @@ export const AppDataSource = new DataSource({
     Price,
     Description,
     Deleted_Grocery,
+    Amount,
   ],
   migrations: [],
   subscribers: [],

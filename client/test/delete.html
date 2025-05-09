@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Delete Grocery</title>
+</head>
+<body>
+  <h1>Delete Grocery</h1>
+  <input id="deleteId" type="number" placeholder="Grocery ID to delete">
+  <button onclick="deleteGrocery()">Delete</button>
+
+  <script>
+    async function deleteGrocery() {
+      const id = document.getElementById('deleteId').value;
+      const res = await fetch(`http://localhost:3005/api/groceries/${id}`, {
+        method: 'DELETE'
+      });
+      alert(res.status === 204 ? "🗑️ Deleted" : "❌ Failed");
+    }
+  </script>
+</body>
+</html>
