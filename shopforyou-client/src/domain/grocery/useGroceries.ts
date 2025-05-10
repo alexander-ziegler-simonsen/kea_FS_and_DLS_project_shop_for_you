@@ -7,11 +7,15 @@ const apiClient = new ApiClient<Grocery>('/api/groceries');
 
 const useGroceries = () => {
   const sortOrder = useGroceryQueryStore((s) => s.groceryQuery.sortOrder);
+  const categoryId = useGroceryQueryStore((s) => s.groceryQuery.categoryId);
+
 
   return useInfiniteQuery({
-    queryKey: ['groceries', sortOrder],
+    queryKey: ['groceries', sortOrder, categoryId],
     queryFn: ({ pageParam = 1 }) =>
-      apiClient.getAll({ params: { page: pageParam, ordering: sortOrder } }),
+      apiClient.getAll({
+        params: { page: pageParam, ordering: sortOrder, categoryId },
+      }),
     getNextPageParam: (lastPage) => lastPage.nextPage,
     staleTime: Infinity,
   });

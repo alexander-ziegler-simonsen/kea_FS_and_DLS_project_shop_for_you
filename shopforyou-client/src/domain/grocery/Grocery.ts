@@ -8,10 +8,10 @@ import { Amount } from "../amount/Amount";
 export interface Grocery {
     id: number;
     createdAt: Date;
-    groceryname: GroceryName[];
-    groceryimage: GroceryImage[];
+    names: GroceryName[];
+    images: GroceryImage[];
     categories: Category[];
-    price: Price[];
-    description: Description[];
-    amount: Amount[];
+    prices: Price[];
+    descriptions: Description[];
+    amounts: Amount[];
 }

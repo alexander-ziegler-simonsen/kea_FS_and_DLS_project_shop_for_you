@@ -24,7 +24,7 @@ const GroceryHomepage = () => {
         <GridItem area={"aside"}>
           <CustomList<Category>
             title="Categories"
-            onSelectedItemId={setCategoryId}
+            onSelectedItemId={(id) => setCategoryId(id)}
             selectedItemId={categoryId}
             useDataHook={useCategories}
           />

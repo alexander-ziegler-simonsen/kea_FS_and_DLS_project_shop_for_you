@@ -4,7 +4,6 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { google } from 'googleapis';
 import 'reflect-metadata';
 import amqp from 'amqplib';
 import { AppDataSource } from './data-source.js';
@@ -61,6 +60,24 @@ const addOrdering = (queryBuilder: SelectQueryBuilder<Grocery>, ordering: string
   }
   if (ordering === "name-desc") {
     queryBuilder.orderBy("name.name", "DESC");
+  }
+};
+
+const addCategoryFilter = (
+  queryBuilder: SelectQueryBuilder<Grocery>,
+  categoryId: string | undefined
+) => {
+  if (categoryId) {
+    queryBuilder.andWhere((qb) => {
+      const subQuery = qb
+        .subQuery()
+        .select("grocery.id")
+        .from(Grocery, "grocery")
+        .leftJoin("grocery.categories", "categories")
+        .where("categories.id = :categoryId", { categoryId })
+        .getQuery();
+      return "grocery.id IN " + subQuery;
+    });
   }
 };
 
@@ -144,6 +161,7 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
     const ordering = req.query.ordering as string | undefined;
+    const categoryId = req.query.categoryId as string | undefined;
 
     const queryBuilder = groceryRepo.createQueryBuilder("grocery")
       .leftJoinAndSelect("grocery.names", "name")
@@ -156,6 +174,7 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
       .take(limit);
 
     addOrdering(queryBuilder, ordering);
+    addCategoryFilter(queryBuilder, categoryId);
 
     const [groceries, totalItems] = await queryBuilder.getManyAndCount();
 

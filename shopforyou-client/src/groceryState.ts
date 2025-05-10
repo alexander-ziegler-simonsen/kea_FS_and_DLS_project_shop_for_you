@@ -27,7 +27,7 @@ interface GroceryQueryStore {
 
 const useGroceryQueryStore = create<GroceryQueryStore>((set) => ({
   groceryQuery: {
-    categoryId: groceryData.results[0]?.categories[0]?.id || 0, // Default to 0 if undefined
+    categoryId: undefined, // Default to 0 if undefined
     sortOrder: 'name-asc', // Default value changed to 'name-asc'
     searchText: '', // Default value
     price: groceryData.results[0]?.prices[0]?.price || 0, // Default to 0 if undefined

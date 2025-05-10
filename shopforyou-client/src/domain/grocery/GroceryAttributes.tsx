@@ -10,16 +10,16 @@ const GroceryAttributes = ({ grocery }: Props) => {
   return (
     <SimpleGrid columns={2} as="dl">
       <DefinitionItem term="Price">
-        <Text>{grocery.price.map((p) => p.price).join(", ")}</Text>
+        <Text>{grocery.prices.map((p) => p.price).join(", ")}</Text>
       </DefinitionItem>
       <DefinitionItem term="Description">
-        <Text>{grocery.description.map((d) => d.description).join(", ")}</Text>
+        <Text>{grocery.descriptions.map((d) => d.description).join(", ")}</Text>
       </DefinitionItem>
       <DefinitionItem term="Image">
-        <Text>{grocery.groceryimage.map((img) => img.image).join(", ")}</Text>
+        <Text>{grocery.images.map((img) => img.image).join(", ")}</Text>
       </DefinitionItem>
       <DefinitionItem term="Name">
-        <Text>{grocery.groceryname.map((name) => name.name).join(", ")}</Text>
+        <Text>{grocery.names.map((name) => name.name).join(", ")}</Text>
       </DefinitionItem>
       <DefinitionItem term="Category">
         <Text>{grocery.categories.map((cat) => cat.name).join(", ")}</Text>

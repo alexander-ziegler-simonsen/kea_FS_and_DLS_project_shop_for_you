@@ -7,6 +7,10 @@ export default {
       name: "Fruit",
     },
     {
+      id: 2,
+      name: "Grain",
+    },
+    {
       id: 3,
       name: "Baked",
     },
