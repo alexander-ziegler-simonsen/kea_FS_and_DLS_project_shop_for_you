@@ -25,7 +25,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-app.use(cors({ origin: 'http://127.0.0.1:5500' }));
+app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
