@@ -137,7 +137,7 @@ services:
       context: ./shopforyou-client
       dockerfile: Dockerfile
     environment:
-      VITE_API_URL: http://localhost:5000
+      VITE_API_URL: http://localhost:3005
       CHOKIDAR_USEPOLLING: true
     ports:
       - "8080:8080"

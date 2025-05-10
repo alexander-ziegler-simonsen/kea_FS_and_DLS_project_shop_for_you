@@ -5,6 +5,7 @@ import GroceryHeading from "../domain/grocery/GroceryHeading";
 import useGroceryQueryStore from "../groceryState";
 import useCategories from "../domain/category/useCategories";
 import { Category } from "../domain/category/Category";
+import GrocerySortSelector from "../components/GrocerySortSelector";
 
 const GroceryHomepage = () => {
   const { categoryId } = useGroceryQueryStore((s) => s.groceryQuery);
@@ -33,7 +34,7 @@ const GroceryHomepage = () => {
         <Box paddingLeft={2}>
           <GroceryHeading />
           <HStack>
-            {/* Add any additional components like filters or sorters here */}
+            <GrocerySortSelector/>
           </HStack>
           <GroceryGrid />
         </Box>

@@ -1,28 +1,20 @@
-import groceryData from "./grocerys"; // Import local grocery data
+import ApiClient from "../../services/api-client";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Grocery } from "./Grocery";
+import useGroceryQueryStore from "../../groceryState";
+
+const apiClient = new ApiClient<Grocery>('/api/groceries');
 
 const useGroceries = () => {
-  // Return local groceryData as a fallback
-  return {
-    data: {
-      pages: [
-        {
-          results: groceryData.results.map((item) => ({
-            id: item.id,
-            createdAt: item.createdAt,
-            groceryname: item.names || [],
-            groceryimage: item.images || [],
-            categories: item.categories || [],
-            price: item.prices || [],
-            description: item.descriptions || [],
-          })),
-        },
-      ],
-    },
-    error: null,
-    isLoading: false,
-    fetchNextPage: () => {},
-    hasNextPage: false,
-  };
+  const sortOrder = useGroceryQueryStore((s) => s.groceryQuery.sortOrder);
+
+  return useInfiniteQuery({
+    queryKey: ['groceries', sortOrder],
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.getAll({ params: { page: pageParam, ordering: sortOrder } }),
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    staleTime: Infinity,
+  });
 };
 
 export default useGroceries;

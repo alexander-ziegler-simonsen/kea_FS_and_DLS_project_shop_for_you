@@ -4,6 +4,10 @@ export interface Response<T> {
   count: number;
   next: string | null;
   results: T[];
+  nextPage?: number; // Added for pagination support
+  totalItems?: number;
+  currentPage?: number;
+  totalPages?: number;
 }
 
 const axiosInstance = axios.create({
@@ -28,6 +32,14 @@ class ApiClient<T> {
 
   get = (id: number | string) =>
     axiosInstance.get<T>(this.endpoint + "/" + id).then((res) => res.data);
+
+  getSorted = (sortOrder: string, config?: AxiosRequestConfig) =>
+    axiosInstance
+      .get<Response<T>>(this.endpoint, {
+        ...config,
+        params: { ...config?.params, ordering: sortOrder },
+      })
+      .then((res) => res.data as Response<T>);
 }
 
 export default ApiClient;

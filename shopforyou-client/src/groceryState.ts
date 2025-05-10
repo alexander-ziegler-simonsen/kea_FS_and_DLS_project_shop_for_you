@@ -22,12 +22,13 @@ interface GroceryQueryStore {
   setGroceryImage: (groceryImage?: string) => void;
   setDescription: (description?: string) => void;
   setAmount: (amount?: number) => void;
+  setGroceries: (groceries: any) => void;
 }
 
 const useGroceryQueryStore = create<GroceryQueryStore>((set) => ({
   groceryQuery: {
     categoryId: groceryData.results[0]?.categories[0]?.id || 0, // Default to 0 if undefined
-    sortOrder: 'asc', // Default value
+    sortOrder: 'name-asc', // Default value changed to 'name-asc'
     searchText: '', // Default value
     price: groceryData.results[0]?.prices[0]?.price || 0, // Default to 0 if undefined
     groceryName: groceryData.results[0]?.names[0]?.name || 'Unknown', // Default to 'Unknown' if undefined
@@ -51,6 +52,8 @@ const useGroceryQueryStore = create<GroceryQueryStore>((set) => ({
     set((state) => ({ groceryQuery: { ...state.groceryQuery, description } })),
   setAmount: (amount) =>
     set((state) => ({ groceryQuery: { ...state.groceryQuery, amount } })),
+  setGroceries: (groceries) =>
+    set((state) => ({ groceryQuery: { ...state.groceryQuery }, groceries })),
 }));
 
 export default useGroceryQueryStore;

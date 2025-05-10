@@ -18,6 +18,7 @@ import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
 import { Amount } from './entities/Amount.js';
 import axios from 'axios';
 import FormData from 'form-data';
+import { SelectQueryBuilder } from 'typeorm';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,6 +45,24 @@ async function publishToRabbit(grocery: any) {
     console.error('RabbitMQ publish failed:', err);
   }
 }
+
+const addOrdering = (queryBuilder: SelectQueryBuilder<Grocery>, ordering: string | undefined) => {
+  if (!ordering) {
+    return;
+  }
+  if (ordering === "price-asc") {
+    queryBuilder.orderBy("price.price", "ASC");
+  }
+  if (ordering === "price-desc") {
+    queryBuilder.orderBy("price.price", "DESC");
+  }
+  if (ordering === "name-asc") {
+    queryBuilder.orderBy("name.name", "ASC");
+  }
+  if (ordering === "name-desc") {
+    queryBuilder.orderBy("name.name", "DESC");
+  }
+};
 
 // -------------------- CREATE --------------------
 app.post('/api/groceries', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
@@ -121,14 +140,35 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);
 
-    const groceries = await groceryRepo.find({
-      relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'deletedGroceries', 'amounts'],
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const ordering = req.query.ordering as string | undefined;
+
+    const queryBuilder = groceryRepo.createQueryBuilder("grocery")
+      .leftJoinAndSelect("grocery.names", "name")
+      .leftJoinAndSelect("grocery.prices", "price")
+      .leftJoinAndSelect("grocery.images", "image")
+      .leftJoinAndSelect("grocery.categories", "category")
+      .leftJoinAndSelect("grocery.descriptions", "description")
+      .leftJoinAndSelect("grocery.amounts", "amount")
+      .skip(skip)
+      .take(limit);
+
+    addOrdering(queryBuilder, ordering);
+
+    const [groceries, totalItems] = await queryBuilder.getManyAndCount();
+
+    const totalPages = Math.ceil(totalItems / limit);
+    const nextPage = page < totalPages ? page + 1 : null;
+
+    res.json({
+      results: groceries,
+      totalItems,
+      currentPage: page,
+      totalPages,
+      nextPage,
     });
-
-    // Filter out groceries that have been "tombstoned"
-    const activeGroceries = groceries.filter(g => !g.deletedGroceries || g.deletedGroceries.length === 0);
-
-    res.json(activeGroceries);
   })().catch(next);
 });
 

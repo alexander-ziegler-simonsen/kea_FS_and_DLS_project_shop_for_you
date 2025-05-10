@@ -36,7 +36,7 @@ const GroceryCard = ({ grocery }: Props) => {
           <Link to={`/groceries/${grocery.id}`}>{grocery.name}</Link>
         </Heading>
         <HStack justifyContent="space-between" mt={4}>
-          <Text fontWeight="bold">Category: {grocery.category}</Text>
+          <Text fontWeight="bold"> {grocery.category}</Text>
           <Text color="green.500" fontWeight="bold">${grocery.price.toFixed(2)}</Text>
         </HStack>
       </CardBody>
