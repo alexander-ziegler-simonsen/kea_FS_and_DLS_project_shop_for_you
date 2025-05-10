@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { google } from 'googleapis';
 import 'reflect-metadata';
 import amqp from 'amqplib';
+import axios from 'axios';
 
 import { AppDataSource } from './data-source.js';
 import { Grocery } from './entities/Grocery.js';
@@ -24,12 +25,6 @@ const upload = multer({ dest: 'uploads/' });
 
 app.use(cors({ origin: 'http://127.0.0.1:5500' }));
 app.use(express.json());
-
-const auth = new google.auth.GoogleAuth({
-  keyFile: 'grocery-uploader-service-account.json',
-  scopes: ['https://www.googleapis.com/auth/drive'],
-});
-const drive = google.drive({ version: 'v3', auth });
 
 async function publishToRabbit(grocery: any) {
   const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
@@ -60,26 +55,17 @@ const handler = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const fileMetadata = {
-      name: req.file.originalname,
-      parents: ['12_zMly4eQvoggqV6ot1WuLrlfgyxQIse'],
-    };
-    const media = {
-      mimeType: req.file.mimetype,
-      body: fs.createReadStream(req.file.path),
-    };
-    const file = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
-      fields: 'id',
+    // Upload image to Imgur
+    const imgurResponse = await axios.post('https://api.imgur.com/3/image', {
+      image: fs.readFileSync(req.file.path, { encoding: 'base64' }),
+      type: 'base64',
+    }, {
+      headers: {
+        Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
+      },
     });
 
-    await drive.permissions.create({
-      fileId: file.data.id!,
-      requestBody: { role: 'reader', type: 'anyone' },
-    });
-
-    const imageUrl = `https://drive.google.com/uc?id=${file.data.id}`;
+    const imageUrl = imgurResponse.data.data.link;
 
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
     const groceryRepo = AppDataSource.getRepository(Grocery);

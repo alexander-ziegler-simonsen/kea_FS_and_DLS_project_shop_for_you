@@ -127,6 +127,7 @@ services:
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
       RABBIT_HOST: ${RABBIT_HOST}
       RABBIT_PORT: ${RABBIT_PORT}
+      IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID}
 
   shopforyou-client:
     container_name: shopforyou-client

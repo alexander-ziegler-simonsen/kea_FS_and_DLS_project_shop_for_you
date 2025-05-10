@@ -1,6 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node,windows,macos,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,windows,macos,react
 
+game/
+genre/
 ### macOS ###
 # General
 .DS_Store
@@ -11,11 +13,9 @@
 Icon
 how-to.txt
 grocery-uploader-service-account.json
-<<<<<<< HEAD
 
 uploads/
-=======
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
+
 
 # Thumbnails
 ._*
