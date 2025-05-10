@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Grocery</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    form { margin-top: 20px; max-width: 400px; }
+    label { display: block; margin-top: 10px; }
+    input, button { padding: 8px; width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>🛒 Grocery Uploader</h1>
+  <form id="groceryForm" enctype="multipart/form-data">
+    <label>Name: <input type="text" name="name" required></label>
+    <label>Type: <input type="text" name="type"></label>
+    <label>Price: <input type="number" name="price" step="0.01"></label>
+    <label>Description: <input type="text" name="description"></label>
+    <label>Upload Image: <input type="file" name="image" accept="image/*" required></label>
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.getElementById('groceryForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const res = await fetch('http://localhost:3005/api/groceries', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      alert(data.success ? "✅ Grocery uploaded!" : `❌ Error: ${data.error}`);
+    });
+  </script>
+</body>
+</html>

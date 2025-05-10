@@ -9,8 +9,18 @@
 
 # Icon must end with two \r
 Icon
-
 how-to.txt
+grocery-uploader-service-account.json
+<<<<<<< HEAD
+
+<<<<<<< HEAD
+how-to.txt
+=======
+uploads/
+=======
+>>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
+
+>>>>>>> 6bd9325a5df312dffc5cf416cec62258dcb43466
 # Thumbnails
 ._*
 

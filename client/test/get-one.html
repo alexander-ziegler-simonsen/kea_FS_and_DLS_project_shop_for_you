@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Get One Grocery</title>
+</head>
+<body>
+  <h1>Get Grocery by ID</h1>
+  <input id="groceryId" type="number" placeholder="Grocery ID">
+  <button onclick="fetchOne()">Fetch</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function fetchOne() {
+      const id = document.getElementById('groceryId').value;
+      const res = await fetch(`http://localhost:3005/api/groceries/${id}`);
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

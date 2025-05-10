@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Get All Groceries</title>
+</head>
+<body>
+  <h1>All Groceries</h1>
+  <button onclick="fetchGroceries()">Load Groceries</button>
+  <ul id="list"></ul>
+
+  <script>
+    async function fetchGroceries() {
+      const res = await fetch('http://localhost:3005/api/groceries');
+      const groceries = await res.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      groceries.forEach(g => {
+        const li = document.createElement('li');
+        li.textContent = `${g.id}: ${g.names[0]?.name} - ${g.categories[0]?.name} - ${g.prices[0]?.price} DKK`;
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
