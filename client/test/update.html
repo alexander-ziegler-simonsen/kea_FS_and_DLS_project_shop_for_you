@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Update Grocery</title>
+</head>
+<body>
+  <h1>Update Grocery</h1>
+  <form id="updateForm" enctype="multipart/form-data">
+    <input type="number" id="groceryId" placeholder="Grocery ID" required><br>
+    <input type="text" name="name" placeholder="Name"><br>
+    <input type="text" name="type" placeholder="Type"><br>
+    <input type="number" name="price" placeholder="Price" step="0.01"><br>
+    <input type="text" name="description" placeholder="Description"><br>
+    <input type="file" name="image" accept="image/*"><br>
+    <button type="submit">Update</button>
+  </form>
+
+  <script>
+    document.getElementById('updateForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = document.getElementById('groceryId').value;
+      const formData = new FormData(e.target);
+      const res = await fetch(`http://localhost:3005/api/groceries/update/${id}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      alert(data.success ? "✅ Updated!" : `❌ Error: ${data.error}`);
+    });
+  </script>
+</body>
+</html>

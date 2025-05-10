@@ -12,16 +12,13 @@ RUN npm install
 RUN npm install -D ts-node typescript @types/node
 
 # Kopiér hele server-mappen ind (inkl. grocery_handler)
-COPY ../../ ./server
+COPY ../../ ./server/mongo-sync-worker
 
 # Skift til grocery_handler-mappen
-WORKDIR /app/server/grocery_handler
-
-# Eksponér porten
-EXPOSE 3005
+WORKDIR /app/server/mongo-sync-worker
 
 # Start server.ts
-CMD ["npx", "ts-node", "server.ts"]
+CMD ["npx", "ts-node", "--esm", "consumer.js"]
 
 
 

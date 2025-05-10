@@ -14,9 +14,13 @@ Icon
 how-to.txt
 grocery-uploader-service-account.json
 
+<<<<<<< HEAD
+how-to.txt
+=======
 uploads/
 
 
+>>>>>>> 6bd9325a5df312dffc5cf416cec62258dcb43466
 # Thumbnails
 ._*
 

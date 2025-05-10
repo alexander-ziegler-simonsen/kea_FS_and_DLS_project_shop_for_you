@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
     Price,
     Description,
     Deleted_Grocery,
-    Amount
+    Amount,
   ],
   migrations: [],
   subscribers: [],
