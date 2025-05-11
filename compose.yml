@@ -131,6 +131,27 @@ services:
       RABBIT_PORT: ${RABBIT_PORT}
       IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID}
 
+  user_handler:
+    build:
+      context: ./server/user_handler
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    volumes:
+      - ./server/user_handler:/app
+    networks:
+      - backend
+    depends_on:
+      - sfu-postgres
+    command: npm start
+    environment:
+      POST_USERNAME: ${POST_USERNAME}
+      POST_PASSWORD: ${POST_PASSWORD}
+      POST_HOST: ${POST_HOST}
+      POST_PORT: ${POST_PORT}
+      POST_DB: ${POST_DB}
+      DATABASE_URL: ${POST_DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
 
 volumes:
   mongodata:

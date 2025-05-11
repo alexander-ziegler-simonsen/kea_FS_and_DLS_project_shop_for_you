@@ -7,6 +7,7 @@ import { Category } from "./entities/Category";
 import { Price } from "./entities/Price";
 import { Description } from "./entities/Description";
 import { Amount } from "./entities/Amount";
+import { User } from "./entities/User";
 import amqp from "amqplib";
 
 interface GroceryNameData {
@@ -54,6 +55,8 @@ async function setupRabbitMQ() {
   await channel.assertExchange('grocery-exchange', 'topic', { durable: false });
   return { connection, channel };
 }
+
+
 
 async function insertGroceries() {
   await AppDataSource.initialize();
@@ -195,7 +198,11 @@ async function insertGroceries() {
   }
 }
 
-insertGroceries().catch((error) => {
-  console.error("❌ Error seeding groceries:", error);
+async function main() {
+  await insertGroceries();
+}
+
+main().catch((error) => {
+  console.error("❌ Error during seeding:", error);
   process.exit(1);
 });

@@ -1,7 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Order } from '../order_handler/Order.js';
-
-
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class User {
@@ -17,8 +14,11 @@ export class User {
     @Column({ type: "varchar", default: "user" })
     role: "admin" | "user";
 
-  @OneToMany(() => Order, (order) => order.user)
-  orders: Order[];
+    @Column({ type: "varchar", unique: true })
+    email: string;
+
+    @Column({ type: "varchar", nullable: true })
+    address: string;
 }
 
-  
+
