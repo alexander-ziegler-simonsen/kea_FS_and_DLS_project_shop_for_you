@@ -48,8 +48,9 @@ const useGroceryQueryStore = create<GroceryQueryStore>((set) => ({
     set((state) => ({ groceryQuery: { ...state.groceryQuery, categoryId } })),
   setSortOrder: (sortOrder) =>
     set((state) => ({ groceryQuery: { ...state.groceryQuery, sortOrder } })),
-  setSearchText: (searchText) =>
-    set((state) => ({ groceryQuery: { ...state.groceryQuery, searchText } })),
+  setSearchText: (searchText) => {
+    set((state) => ({ groceryQuery: { ...state.groceryQuery, searchText } }));
+  },
   setPrice: (price) =>
     set((state) => ({ groceryQuery: { ...state.groceryQuery, price } })),
   setGroceryName: (groceryName) =>

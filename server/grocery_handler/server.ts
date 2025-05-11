@@ -81,6 +81,17 @@ const addCategoryFilter = (
   }
 };
 
+const addSearchFilter = (
+  queryBuilder: SelectQueryBuilder<Grocery>,
+  searchText: string | undefined
+) => {
+  if (searchText) {
+    queryBuilder.andWhere("name.name ILIKE :searchText", {
+      searchText: `%${searchText}%`,
+    });
+  }
+};
+
 // -------------------- CREATE --------------------
 app.post('/api/groceries', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
   (async () => {
@@ -154,40 +165,49 @@ app.post('/api/groceries', upload.single('image'), (req: Request, res: Response,
 // -------------------- GET ALL --------------------
 app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-    const groceryRepo = AppDataSource.getRepository(Grocery);
+    try {
+      if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+      const groceryRepo = AppDataSource.getRepository(Grocery);
 
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
-    const ordering = req.query.ordering as string | undefined;
-    const categoryId = req.query.categoryId as string | undefined;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      const ordering = req.query.ordering as string | undefined;
+      const categoryId = req.query.categoryId as string | undefined;
+      const searchText = req.query.searchText as string | undefined;
 
-    const queryBuilder = groceryRepo.createQueryBuilder("grocery")
-      .leftJoinAndSelect("grocery.names", "name")
-      .leftJoinAndSelect("grocery.prices", "price")
-      .leftJoinAndSelect("grocery.images", "image")
-      .leftJoinAndSelect("grocery.categories", "category")
-      .leftJoinAndSelect("grocery.descriptions", "description")
-      .leftJoinAndSelect("grocery.amounts", "amount")
-      .skip(skip)
-      .take(limit);
+      const queryBuilder = groceryRepo.createQueryBuilder("grocery")
+        .leftJoinAndSelect("grocery.names", "name")
+        .leftJoinAndSelect("grocery.prices", "price")
+        .leftJoinAndSelect("grocery.images", "image")
+        .leftJoinAndSelect("grocery.categories", "category")
+        .leftJoinAndSelect("grocery.descriptions", "description")
+        .leftJoinAndSelect("grocery.amounts", "amount")
+        .skip(skip)
+        .take(limit);
 
-    addOrdering(queryBuilder, ordering);
-    addCategoryFilter(queryBuilder, categoryId);
+      addOrdering(queryBuilder, ordering);
+      addCategoryFilter(queryBuilder, categoryId);
+      addSearchFilter(queryBuilder, searchText);
 
-    const [groceries, totalItems] = await queryBuilder.getManyAndCount();
+      console.log("Generated SQL Query:", queryBuilder.getSql()); // Debugging log
 
-    const totalPages = Math.ceil(totalItems / limit);
-    const nextPage = page < totalPages ? page + 1 : null;
+      const [groceries, totalItems] = await queryBuilder.getManyAndCount();
 
-    res.json({
-      results: groceries,
-      totalItems,
-      currentPage: page,
-      totalPages,
-      nextPage,
-    });
+      const totalPages = Math.ceil(totalItems / limit);
+      const nextPage = page < totalPages ? page + 1 : null;
+
+      res.json({
+        results: groceries,
+        totalItems,
+        currentPage: page,
+        totalPages,
+        nextPage,
+      });
+    } catch (error) {
+      console.error("Error fetching groceries:", error); // Log the error
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   })().catch(next);
 });
 
