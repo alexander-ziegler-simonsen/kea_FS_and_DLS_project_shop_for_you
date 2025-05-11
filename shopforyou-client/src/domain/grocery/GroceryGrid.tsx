@@ -1,6 +1,8 @@
 import { SimpleGrid, Spinner, Text } from "@chakra-ui/react";
 import useGroceries from "./useGroceries";
 import GroceryCard from "./GroceryCard";
+import GroceryCardSkeleton from "./GroceryCardSkeleton";
+import GroceryCardContainer from "./GroceryCardContainer";
 import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -29,7 +31,9 @@ const GroceryGrid = () => {
       >
         {isLoading
           ? skeletons.map((skeleton) => (
-              <div key={skeleton} style={{ height: "200px", background: "#f0f0f0" }} />
+              <GroceryCardContainer key={skeleton}>
+                <GroceryCardSkeleton />
+              </GroceryCardContainer>
             ))
           : data?.pages.map((page, index) => (
               <React.Fragment key={index}>
@@ -41,7 +45,11 @@ const GroceryGrid = () => {
                     category: grocery.categories?.[0]?.name || "Uncategorized",
                     price: grocery.prices?.[0]?.price || 0,
                   };
-                  return <GroceryCard key={grocery.id} grocery={transformedGrocery} />;
+                  return (
+                    <GroceryCardContainer key={grocery.id}>
+                      <GroceryCard grocery={transformedGrocery} />
+                    </GroceryCardContainer>
+                  );
                 })}
               </React.Fragment>
             ))}

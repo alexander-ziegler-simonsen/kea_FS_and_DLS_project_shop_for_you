@@ -318,4 +318,20 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
   })().catch(next);
 });
 
+// -------------------- GET UNIQUE CATEGORIES --------------------
+app.get('/api/categories', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const categoryRepo = AppDataSource.getRepository(Category);
+
+    // Fetch all unique categories with id and name
+    const categories = await categoryRepo.find({ select: ['id', 'name'] });
+
+    res.json({ categories });
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    next(error);
+  }
+});
+
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
