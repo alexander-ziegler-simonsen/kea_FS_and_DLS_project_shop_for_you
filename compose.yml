@@ -131,6 +131,21 @@ services:
       RABBIT_PORT: ${RABBIT_PORT}
       IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID}
 
+  shopforyou-client:
+    container_name: shopforyou-client
+    build:
+      context: ./shopforyou-client
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_URL: http://localhost:3005
+      CHOKIDAR_USEPOLLING: true
+    ports:
+      - "8080:8080"
+    networks:
+      - frontend
+    volumes:
+      - ./shopforyou-client:/app
+      - /app/node_modules
   user_handler:
     build:
       context: ./server/user_handler
@@ -165,3 +180,4 @@ volumes:
 
 networks:
   backend:
+  frontend:

@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb';
 const sleep = (ms: number): Promise<void> =>
   new Promise((res) => setTimeout(res, ms));
 
-async function connectMongo(retries = 5): Promise<MongoClient> {
+async function connectMongo(retries = 8): Promise<MongoClient> {
   const url = `mongodb://${process.env.MON_USERNAME}:${process.env.MON_PASSWORD}@${process.env.MON_HOST}:${process.env.MON_PORT}`;
 
   for (let i = 0; i < retries; i++) {
