@@ -50,13 +50,22 @@ interface AmountData {
 }
 
 async function setupRabbitMQ() {
-  const connection = await amqp.connect(`amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@sfu-rabbitmq:5672`);
+  const connection = await amqp.connect(`amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`);
   const channel = await connection.createChannel();
-  await channel.assertExchange('grocery-exchange', 'topic', { durable: false });
+  const exchange = 'grocery-exchange';
+  const queueName = 'grocery-queue-created';
+  const routingKey = 'grocery.created';
+
+  await channel.assertExchange(exchange, 'topic', { durable: true });
+  await channel.assertQueue(queueName, {
+    durable: true,
+    exclusive: false,
+    autoDelete: false,
+  });
+  await channel.bindQueue(queueName, exchange, routingKey);
+
   return { connection, channel };
 }
-
-
 
 async function insertGroceries() {
   await AppDataSource.initialize();

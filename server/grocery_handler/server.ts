@@ -34,9 +34,17 @@ async function publishToRabbit(grocery: any) {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     const exchange = 'grocery-exchange';
+    const queueName = 'grocery-queue'; // Use a named queue
     const routingKey = 'grocery.created';
 
-    await channel.assertExchange(exchange, 'topic', { durable: false });
+    await channel.assertExchange(exchange, 'topic', { durable: true });
+    await channel.assertQueue(queueName, {
+      durable: true,       // Ensure the queue is durable if you need message persistence
+      exclusive: false,    // Make it non-exclusive to allow multiple connections
+      autoDelete: false,   // Prevent auto-deletion
+    });
+
+    await channel.bindQueue(queueName, exchange, routingKey);
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
 
     setTimeout(() => connection.close(), 500);
@@ -287,7 +295,7 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       const exchange = 'grocery-exchange';
       const routingKey = 'grocery.updated';
 
-      await channel.assertExchange(exchange, 'topic', { durable: false });
+      await channel.assertExchange(exchange, 'topic', { durable: true });
       channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(fullGrocery)));
 
       setTimeout(() => connection.close(), 500);
@@ -326,7 +334,7 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
       const exchange = 'grocery-exchange';
       const routingKey = 'grocery.deleted';
 
-      await channel.assertExchange(exchange, 'topic', { durable: false });
+      await channel.assertExchange(exchange, 'topic', { durable: true });
       channel.publish(exchange, routingKey, Buffer.from(JSON.stringify({ id: grocery.id })));
 
       setTimeout(() => connection.close(), 500);

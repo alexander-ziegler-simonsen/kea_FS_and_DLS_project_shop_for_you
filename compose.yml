@@ -80,6 +80,8 @@ services:
       DATABASE_URL: ${POST_DATABASE_URL}
       RABBIT_USERNAME: ${RABBIT_USERNAME}
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
     volumes:
       - ./seeder:/app
     networks:
