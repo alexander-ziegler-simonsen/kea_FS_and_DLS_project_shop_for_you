@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "./pages/Layout";
 import GroceryHomepage from "./pages/GroceryHomepage";
-import GameDetailPage from "./pages/GameDetailPage";
+import GroceryDetailPage from "./pages/GroceryDetailPage";
 import ErrorPage from "./pages/ErrorPage";
 
 const router = createBrowserRouter([
@@ -11,7 +11,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "/", element: <GroceryHomepage /> },
-      { path: "/games/:id", element: <GameDetailPage /> },
+      { path: "/groceries/:id", element: <GroceryDetailPage /> },
     ],
   },
 ]);

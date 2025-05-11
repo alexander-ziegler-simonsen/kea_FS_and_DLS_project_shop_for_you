@@ -1,5 +1,4 @@
 import { Card, CardBody, Heading, HStack, Image, Text } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
 import getCroppedImageUrl from "../../services/image-url";
 import noImagePlaceholder from "../../assets/no-image-placeholder-6f3882e0.webp";
 
@@ -32,9 +31,7 @@ const GroceryCard = ({ grocery }: Props) => {
         }}
       />
       <CardBody>
-        <Heading fontSize="2xl">
-          <Link to={`/groceries/${grocery.id}`}>{grocery.name}</Link>
-        </Heading>
+        <Heading fontSize="2xl">{grocery.name}</Heading>
         <HStack justifyContent="space-between" mt={4}>
           <Text fontWeight="bold"> {grocery.category}</Text>
           <Text color="green.500" fontWeight="bold">${grocery.price.toFixed(2)}</Text>

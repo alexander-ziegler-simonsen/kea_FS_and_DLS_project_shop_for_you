@@ -5,6 +5,7 @@ import GroceryCardSkeleton from "./GroceryCardSkeleton";
 import GroceryCardContainer from "./GroceryCardContainer";
 import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { Link } from "react-router-dom";
 
 const GroceryGrid = () => {
   const skeletons = [...Array(20).keys()];
@@ -47,7 +48,9 @@ const GroceryGrid = () => {
                   };
                   return (
                     <GroceryCardContainer key={grocery.id}>
-                      <GroceryCard grocery={transformedGrocery} />
+                      <Link to={`/groceries/${grocery.id}`}>
+                        <GroceryCard grocery={transformedGrocery} />
+                      </Link>
                     </GroceryCardContainer>
                   );
                 })}

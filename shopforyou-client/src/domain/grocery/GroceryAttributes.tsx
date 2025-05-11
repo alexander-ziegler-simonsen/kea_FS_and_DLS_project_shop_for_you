@@ -15,14 +15,11 @@ const GroceryAttributes = ({ grocery }: Props) => {
       <DefinitionItem term="Description">
         <Text>{grocery.descriptions.map((d) => d.description).join(", ")}</Text>
       </DefinitionItem>
-      <DefinitionItem term="Image">
-        <Text>{grocery.images.map((img) => img.image).join(", ")}</Text>
-      </DefinitionItem>
-      <DefinitionItem term="Name">
-        <Text>{grocery.names.map((name) => name.name).join(", ")}</Text>
-      </DefinitionItem>
       <DefinitionItem term="Category">
         <Text>{grocery.categories.map((cat) => cat.name).join(", ")}</Text>
+      </DefinitionItem>
+      <DefinitionItem term="Amount">
+        <Text>{grocery.amounts.map((amt) => amt.amount).join(", ")}</Text>
       </DefinitionItem>
     </SimpleGrid>
   );
