@@ -1,5 +1,4 @@
 import { Card, CardBody, Heading, HStack, Image, Text } from "@chakra-ui/react";
-import getCroppedImageUrl from "../../services/image-url";
 import noImagePlaceholder from "../../assets/no-image-placeholder-6f3882e0.webp";
 
 interface Grocery {
@@ -15,7 +14,7 @@ interface Props {
 }
 
 const GroceryCard = ({ grocery }: Props) => {
-  const imageUrl = getCroppedImageUrl(grocery.image) || noImagePlaceholder;
+  const imageUrl = (grocery.image) || noImagePlaceholder;
 
   return (
     <Card maxW="300px" borderRadius="lg" overflow="hidden">
