@@ -3,6 +3,7 @@ import Layout from "./pages/Layout";
 import GroceryHomepage from "./pages/GroceryHomepage";
 import GroceryDetailPage from "./pages/GroceryDetailPage";
 import ErrorPage from "./pages/ErrorPage";
+import NewGroceryPage from "./pages/NewGroceryPage";
 
 const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <GroceryHomepage /> },
       { path: "/groceries/:id", element: <GroceryDetailPage /> },
+      { path: "/new-grocery", element: <NewGroceryPage /> },
     ],
   },
 ]);
