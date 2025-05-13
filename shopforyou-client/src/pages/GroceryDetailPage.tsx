@@ -85,8 +85,27 @@ const GroceryDetailPage = () => {
       };
 
       if (selectedFile) {
-        const imageUrl = URL.createObjectURL(selectedFile); // Temporary URL for the image
-        formDataToSend.images = [{ image: imageUrl }];
+        try {
+          const imageFormData = new FormData();
+          imageFormData.append("image", selectedFile);
+
+          const serverResponse = await axios.post(
+            "http://localhost:3005/api/upload-to-imgur", // Server endpoint for Imgur upload
+            imageFormData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          const imageUrl = serverResponse.data.link; // Get the Imgur link from the server response
+          formDataToSend.images = [{ image: imageUrl }];
+        } catch (error) {
+          console.error("Failed to upload image to the server:", error);
+          alert("Failed to upload image. Please try again.");
+          return;
+        }
       }
 
       await axios.post(

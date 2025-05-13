@@ -349,4 +349,37 @@ app.get('/api/categories', async (req: Request, res: Response, next: NextFunctio
   }
 });
 
+// -------------------- UPLOAD TO IMGUR --------------------
+app.post('/api/upload-to-imgur', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image file is required' });
+    }
+
+    const imgurClientId = process.env.IMGUR_CLIENT_ID;
+    if (!imgurClientId) {
+      return res.status(500).json({ error: 'Imgur Client ID is not configured' });
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('image', fs.createReadStream(req.file.path));
+
+      const response = await axios.post('https://api.imgur.com/3/image', formData, {
+        headers: {
+          Authorization: `Client-ID ${imgurClientId}`,
+          ...formData.getHeaders(),
+        },
+      });
+
+      const imageUrl = response.data.data.link;
+      fs.unlinkSync(req.file.path); // Clean up the uploaded file
+      res.json({ link: imageUrl });
+    } catch (error) {
+      console.error('Failed to upload image to Imgur:', error);
+      res.status(500).json({ error: 'Failed to upload image to Imgur' });
+    }
+  })().catch(next);
+});
+
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
