@@ -18,6 +18,7 @@ import { Amount } from './entities/Amount.js';
 import axios from 'axios';
 import FormData from 'form-data';
 import { SelectQueryBuilder } from 'typeorm';
+import { connectMongo } from './mongo-connection.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,50 +54,23 @@ async function publishToRabbit(grocery: any) {
   }
 }
 
-const addOrdering = (queryBuilder: SelectQueryBuilder<Grocery>, ordering: string | undefined) => {
-  if (!ordering) {
-    return;
-  }
-  if (ordering === "price-asc") {
-    queryBuilder.orderBy("price.price", "ASC");
-  }
-  if (ordering === "price-desc") {
-    queryBuilder.orderBy("price.price", "DESC");
-  }
-  if (ordering === "name-asc") {
-    queryBuilder.orderBy("name.name", "ASC");
-  }
-  if (ordering === "name-desc") {
-    queryBuilder.orderBy("name.name", "DESC");
-  }
+const addOrdering = (sort: any, ordering: string | undefined) => {
+  if (!ordering) return;
+  if (ordering === 'price-asc') sort['prices.0.price'] = 1; // Sort by the first price in the array
+  if (ordering === 'price-desc') sort['prices.0.price'] = -1;
+  if (ordering === 'name-asc') sort['names.0.name'] = 1; // Sort by the first name in the array
+  if (ordering === 'name-desc') sort['names.0.name'] = -1;
 };
 
-const addCategoryFilter = (
-  queryBuilder: SelectQueryBuilder<Grocery>,
-  categoryId: string | undefined
-) => {
+const addCategoryFilter = (query: any, categoryId: string | undefined) => {
   if (categoryId) {
-    queryBuilder.andWhere((qb) => {
-      const subQuery = qb
-        .subQuery()
-        .select("grocery.id")
-        .from(Grocery, "grocery")
-        .leftJoin("grocery.categories", "categories")
-        .where("categories.id = :categoryId", { categoryId })
-        .getQuery();
-      return "grocery.id IN " + subQuery;
-    });
+    query.categories = { $elemMatch: { id: parseInt(categoryId) } }; // Match any category with the given ID
   }
 };
 
-const addSearchFilter = (
-  queryBuilder: SelectQueryBuilder<Grocery>,
-  searchText: string | undefined
-) => {
+const addSearchFilter = (query: any, searchText: string | undefined) => {
   if (searchText) {
-    queryBuilder.andWhere("name.name ILIKE :searchText", {
-      searchText: `%${searchText}%`,
-    });
+    query['names.0.name'] = { $regex: searchText, $options: 'i' }; // Search by the first name in the array
   }
 };
 
@@ -174,8 +148,9 @@ app.post('/api/groceries', upload.single('image'), (req: Request, res: Response,
 app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
     try {
-      if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-      const groceryRepo = AppDataSource.getRepository(Grocery);
+      const mongoClient = await connectMongo();
+      const db = mongoClient.db(process.env.MON_DB || 'mirror');
+      const groceriesCollection = db.collection('groceries');
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -184,24 +159,21 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
       const categoryId = req.query.categoryId as string | undefined;
       const searchText = req.query.searchText as string | undefined;
 
-      const queryBuilder = groceryRepo.createQueryBuilder("grocery")
-        .leftJoinAndSelect("grocery.names", "name")
-        .leftJoinAndSelect("grocery.prices", "price")
-        .leftJoinAndSelect("grocery.images", "image")
-        .leftJoinAndSelect("grocery.categories", "category")
-        .leftJoinAndSelect("grocery.descriptions", "description")
-        .leftJoinAndSelect("grocery.amounts", "amount")
+      const sort: any = {};
+      const query: any = {};
+
+      addOrdering(sort, ordering);
+      addCategoryFilter(query, categoryId);
+      addSearchFilter(query, searchText);
+
+      const groceries = await groceriesCollection
+        .find(query)
+        .sort(sort)
         .skip(skip)
-        .take(limit);
+        .limit(limit)
+        .toArray();
 
-      addOrdering(queryBuilder, ordering);
-      addCategoryFilter(queryBuilder, categoryId);
-      addSearchFilter(queryBuilder, searchText);
-
-      console.log("Generated SQL Query:", queryBuilder.getSql()); // Debugging log
-
-      const [groceries, totalItems] = await queryBuilder.getManyAndCount();
-
+      const totalItems = await groceriesCollection.countDocuments(query);
       const totalPages = Math.ceil(totalItems / limit);
       const nextPage = page < totalPages ? page + 1 : null;
 
@@ -212,9 +184,11 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
         totalPages,
         nextPage,
       });
+
+      await mongoClient.close();
     } catch (error) {
-      console.error("Error fetching groceries:", error); // Log the error
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error('Error fetching groceries from MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   })().catch(next);
 });
