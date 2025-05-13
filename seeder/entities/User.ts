@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -19,6 +20,7 @@ export class User {
 
     @Column({ type: "varchar", nullable: true })
     address: string;
+
 }
 
 
