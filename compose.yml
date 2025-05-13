@@ -132,6 +132,11 @@ services:
       RABBIT_HOST: ${RABBIT_HOST}
       RABBIT_PORT: ${RABBIT_PORT}
       IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID}
+      MON_USERNAME: ${MON_USERNAME}
+      MON_PASSWORD: ${MON_PASSWORD}
+      MON_HOST: ${MON_HOST}
+      MON_PORT: ${MON_PORT}
+      MON_DB: ${MON_DB}
 
   shopforyou-client:
     container_name: shopforyou-client
