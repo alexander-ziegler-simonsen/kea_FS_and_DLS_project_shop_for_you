@@ -80,6 +80,8 @@ services:
       DATABASE_URL: ${POST_DATABASE_URL}
       RABBIT_USERNAME: ${RABBIT_USERNAME}
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
     volumes:
       - ./seeder:/app
     networks:
@@ -130,7 +132,27 @@ services:
       RABBIT_HOST: ${RABBIT_HOST}
       RABBIT_PORT: ${RABBIT_PORT}
       IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID}
+      MON_USERNAME: ${MON_USERNAME}
+      MON_PASSWORD: ${MON_PASSWORD}
+      MON_HOST: ${MON_HOST}
+      MON_PORT: ${MON_PORT}
+      MON_DB: ${MON_DB}
 
+  shopforyou-client:
+    container_name: shopforyou-client
+    build:
+      context: ./shopforyou-client
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_URL: http://localhost:3005
+      CHOKIDAR_USEPOLLING: true
+    ports:
+      - "8080:8080"
+    networks:
+      - frontend
+    volumes:
+      - ./shopforyou-client:/app
+      - /app/node_modules
   user_handler:
     build:
       context: ./server/user_handler
@@ -186,3 +208,4 @@ volumes:
 
 networks:
   backend:
+  frontend:

@@ -4,7 +4,6 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { google } from 'googleapis';
 import 'reflect-metadata';
 import amqp from 'amqplib';
 import { AppDataSource } from './data-source.js';
@@ -18,6 +17,7 @@ import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
 import { Amount } from './entities/Amount.js';
 import axios from 'axios';
 import FormData from 'form-data';
+import { SelectQueryBuilder } from 'typeorm';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +25,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-app.use(cors({ origin: 'http://127.0.0.1:5500' }));
+app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
@@ -34,9 +34,17 @@ async function publishToRabbit(grocery: any) {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     const exchange = 'grocery-exchange';
+    const queueName = 'grocery-queue'; // Use a named queue
     const routingKey = 'grocery.created';
 
-    await channel.assertExchange(exchange, 'topic', { durable: false });
+    await channel.assertExchange(exchange, 'topic', { durable: true });
+    await channel.assertQueue(queueName, {
+      durable: true,       // Ensure the queue is durable if you need message persistence
+      exclusive: false,    // Make it non-exclusive to allow multiple connections
+      autoDelete: false,   // Prevent auto-deletion
+    });
+
+    await channel.bindQueue(queueName, exchange, routingKey);
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
 
     setTimeout(() => connection.close(), 500);
@@ -44,6 +52,53 @@ async function publishToRabbit(grocery: any) {
     console.error('RabbitMQ publish failed:', err);
   }
 }
+
+const addOrdering = (queryBuilder: SelectQueryBuilder<Grocery>, ordering: string | undefined) => {
+  if (!ordering) {
+    return;
+  }
+  if (ordering === "price-asc") {
+    queryBuilder.orderBy("price.price", "ASC");
+  }
+  if (ordering === "price-desc") {
+    queryBuilder.orderBy("price.price", "DESC");
+  }
+  if (ordering === "name-asc") {
+    queryBuilder.orderBy("name.name", "ASC");
+  }
+  if (ordering === "name-desc") {
+    queryBuilder.orderBy("name.name", "DESC");
+  }
+};
+
+const addCategoryFilter = (
+  queryBuilder: SelectQueryBuilder<Grocery>,
+  categoryId: string | undefined
+) => {
+  if (categoryId) {
+    queryBuilder.andWhere((qb) => {
+      const subQuery = qb
+        .subQuery()
+        .select("grocery.id")
+        .from(Grocery, "grocery")
+        .leftJoin("grocery.categories", "categories")
+        .where("categories.id = :categoryId", { categoryId })
+        .getQuery();
+      return "grocery.id IN " + subQuery;
+    });
+  }
+};
+
+const addSearchFilter = (
+  queryBuilder: SelectQueryBuilder<Grocery>,
+  searchText: string | undefined
+) => {
+  if (searchText) {
+    queryBuilder.andWhere("name.name ILIKE :searchText", {
+      searchText: `%${searchText}%`,
+    });
+  }
+};
 
 // -------------------- CREATE --------------------
 app.post('/api/groceries', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
@@ -118,17 +173,49 @@ app.post('/api/groceries', upload.single('image'), (req: Request, res: Response,
 // -------------------- GET ALL --------------------
 app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-    const groceryRepo = AppDataSource.getRepository(Grocery);
+    try {
+      if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+      const groceryRepo = AppDataSource.getRepository(Grocery);
 
-    const groceries = await groceryRepo.find({
-      relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'deletedGroceries', 'amounts'],
-    });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      const ordering = req.query.ordering as string | undefined;
+      const categoryId = req.query.categoryId as string | undefined;
+      const searchText = req.query.searchText as string | undefined;
 
-    // Filter out groceries that have been "tombstoned"
-    const activeGroceries = groceries.filter(g => !g.deletedGroceries || g.deletedGroceries.length === 0);
+      const queryBuilder = groceryRepo.createQueryBuilder("grocery")
+        .leftJoinAndSelect("grocery.names", "name")
+        .leftJoinAndSelect("grocery.prices", "price")
+        .leftJoinAndSelect("grocery.images", "image")
+        .leftJoinAndSelect("grocery.categories", "category")
+        .leftJoinAndSelect("grocery.descriptions", "description")
+        .leftJoinAndSelect("grocery.amounts", "amount")
+        .skip(skip)
+        .take(limit);
 
-    res.json(activeGroceries);
+      addOrdering(queryBuilder, ordering);
+      addCategoryFilter(queryBuilder, categoryId);
+      addSearchFilter(queryBuilder, searchText);
+
+      console.log("Generated SQL Query:", queryBuilder.getSql()); // Debugging log
+
+      const [groceries, totalItems] = await queryBuilder.getManyAndCount();
+
+      const totalPages = Math.ceil(totalItems / limit);
+      const nextPage = page < totalPages ? page + 1 : null;
+
+      res.json({
+        results: groceries,
+        totalItems,
+        currentPage: page,
+        totalPages,
+        nextPage,
+      });
+    } catch (error) {
+      console.error("Error fetching groceries:", error); // Log the error
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   })().catch(next);
 });
 
@@ -208,7 +295,7 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       const exchange = 'grocery-exchange';
       const routingKey = 'grocery.updated';
 
-      await channel.assertExchange(exchange, 'topic', { durable: false });
+      await channel.assertExchange(exchange, 'topic', { durable: true });
       channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(fullGrocery)));
 
       setTimeout(() => connection.close(), 500);
@@ -247,7 +334,7 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
       const exchange = 'grocery-exchange';
       const routingKey = 'grocery.deleted';
 
-      await channel.assertExchange(exchange, 'topic', { durable: false });
+      await channel.assertExchange(exchange, 'topic', { durable: true });
       channel.publish(exchange, routingKey, Buffer.from(JSON.stringify({ id: grocery.id })));
 
       setTimeout(() => connection.close(), 500);
@@ -257,6 +344,22 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
 
     res.status(204).send();
   })().catch(next);
+});
+
+// -------------------- GET UNIQUE CATEGORIES --------------------
+app.get('/api/categories', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const categoryRepo = AppDataSource.getRepository(Category);
+
+    // Fetch all unique categories with id and name
+    const categories = await categoryRepo.find({ select: ['id', 'name'] });
+
+    res.json({ categories });
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    next(error);
+  }
 });
 
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));

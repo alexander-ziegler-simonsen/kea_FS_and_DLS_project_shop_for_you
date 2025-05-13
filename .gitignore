@@ -1,6 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node,windows,macos,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,windows,macos,react
 
+game/
+genre/
 ### macOS ###
 # General
 .DS_Store
@@ -11,12 +13,14 @@
 Icon
 how-to.txt
 grocery-uploader-service-account.json
+
 <<<<<<< HEAD
-
-uploads/
+how-to.txt
 =======
->>>>>>> 29cbef213ba8363836c217b7de0f333fd266ab27
+uploads/
 
+
+>>>>>>> 6bd9325a5df312dffc5cf416cec62258dcb43466
 # Thumbnails
 ._*
 
@@ -163,6 +167,7 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+.dockerignore
 
 # yarn v2
 .yarn/cache
