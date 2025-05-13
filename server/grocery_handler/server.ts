@@ -17,7 +17,6 @@ import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
 import { Amount } from './entities/Amount.js';
 import axios from 'axios';
 import FormData from 'form-data';
-import { SelectQueryBuilder } from 'typeorm';
 import { connectMongo } from './mongo-connection.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -196,14 +195,21 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
 // -------------------- GET ONE --------------------
 app.get('/api/groceries/:id', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-    const groceryRepo = AppDataSource.getRepository(Grocery);
-    const grocery = await groceryRepo.findOne({
-      where: { id: Number(req.params.id) },
-      relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'amounts'],
-    });
-    if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
-    res.json(grocery);
+    try {
+      const mongoClient = await connectMongo();
+      const db = mongoClient.db(process.env.MON_DB || 'mirror');
+      const groceriesCollection = db.collection('groceries');
+
+      const grocery = await groceriesCollection.findOne({ id: parseInt(req.params.id) });
+
+      if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
+
+      res.json(grocery);
+      await mongoClient.close();
+    } catch (error) {
+      console.error('Error fetching grocery from MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   })().catch(next);
 });
 
@@ -323,15 +329,22 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
 // -------------------- GET UNIQUE CATEGORIES --------------------
 app.get('/api/categories', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-    const categoryRepo = AppDataSource.getRepository(Category);
+    const mongoClient = await connectMongo();
+    const db = mongoClient.db(process.env.MON_DB || 'mirror');
+    const groceriesCollection = db.collection('groceries');
 
-    // Fetch all unique categories with id and name
-    const categories = await categoryRepo.find({ select: ['id', 'name'] });
+    // Fetch all unique categories from the groceries collection in alphabetical order
+    const categories = await groceriesCollection.aggregate([
+      { $unwind: "$categories" }, // Unwind the categories array
+      { $group: { _id: "$categories.id", name: { $first: "$categories.name" } } }, // Group by category ID
+      { $project: { id: "$_id", name: 1, _id: 0 } }, // Format the output
+      { $sort: { name: 1 } } // Sort by name in ascending order
+    ]).toArray();
 
     res.json({ categories });
+    await mongoClient.close();
   } catch (error) {
-    console.error('Failed to fetch categories:', error);
+    console.error('Failed to fetch categories from MongoDB:', error);
     next(error);
   }
 });
