@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useGroceryQueryStore from "../../groceryState";
 import useCategories from "../category/useCategories";
+import useCartStore from "../order/cartStore";
 import { FaShoppingCart } from "react-icons/fa";
 import OrderDrawer, { OrderDrawerHandle } from "../order/OrderDrawer";
 
@@ -13,6 +14,8 @@ const GroceryHeading = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const drawerRef = useRef<OrderDrawerHandle>(null);
+  const cartItems = useCartStore((state) => state.items);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -66,7 +69,7 @@ const GroceryHeading = () => {
               justifyContent="center"
               fontWeight="bold"
             >
-              3
+              {cartCount}
             </Badge>
           </Box>
         </Box>

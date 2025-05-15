@@ -18,7 +18,11 @@ const GroceryCard = ({ grocery }: Props) => {
   const imageUrl = (grocery.image) || noImagePlaceholder;
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     addToCart({
       id: grocery.id,
       name: grocery.name,
