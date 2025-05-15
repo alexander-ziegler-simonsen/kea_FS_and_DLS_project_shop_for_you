@@ -1,7 +1,10 @@
 // This component renders a Drawer that opens from the right when triggered
 import { Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, DrawerFooter, useDisclosure } from "@chakra-ui/react";
-import { ReactNode, forwardRef, useImperativeHandle, useRef } from "react";
+import { ReactNode, forwardRef, useImperativeHandle, useRef, useState } from "react";
 import useCartStore from "./cartStore";
+import { jwtDecode } from "jwt-decode";
+import { Button as ChakraButton } from "@chakra-ui/react";
+import OrderDetails from "./OrderDetails";
 
 export interface OrderDrawerHandle {
   open: () => void;
@@ -12,6 +15,67 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
   const { isOpen, onOpen, onClose } = useDisclosure();
   useImperativeHandle(ref, () => ({ open: onOpen, close: onClose }));
   const cartItems = useCartStore((state) => state.items);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({ username: "", email: "", address: "" });
+  const { isOpen: isModalOpen, onOpen: openModal, onClose: closeModal } = useDisclosure();
+
+  const handleOrder = async () => {
+    let username = "";
+    let email = "";
+    let address = "";
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        username = decoded.username || "";
+        email = decoded.email || "";
+        address = decoded.address || "";
+      } catch {
+        openModal();
+        return;
+      }
+    } else {
+      openModal();
+      return;
+    }
+    await submitOrder({ username, email, address });
+  };
+
+  const submitOrder = async (userData: { username: string; email: string; address: string }) => {
+    setIsSubmitting(true);
+    const totalprice = cartItems.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+    const orderlines = cartItems.map(item => ({
+      groceryname: item.name,
+      groceryamount: item.quantity,
+      price: item.price * item.quantity
+    }));
+    try {
+      await fetch("http://localhost:3007/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: userData.username,
+          email: userData.email,
+          address: userData.address,
+          totalprice,
+          orderlines
+        })
+      });
+      useCartStore.getState().clearCart();
+      closeModal();
+      onClose();
+    } catch (e) {
+      alert("Order failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitOrder(form);
+  };
 
   return (
     <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
@@ -127,16 +191,27 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
                 borderRadius: '4px',
                 padding: '8px 20px',
                 fontSize: '1em',
-                cursor: 'pointer',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 marginLeft: '16px',
+                opacity: isSubmitting ? 0.7 : 1,
               }}
-              onClick={() => {/* TODO: Add order logic here */}}
+              onClick={handleOrder}
+              disabled={isSubmitting}
             >
-              Order
+              {isSubmitting ? 'Ordering...' : 'Order'}
             </button>
           </DrawerFooter>
         )}
       </DrawerContent>
+      {/* Modal for user info if no JWT */}
+      <OrderDetails
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        isSubmitting={isSubmitting}
+        form={form}
+        setForm={setForm}
+        onSubmit={handleFormSubmit}
+      />
     </Drawer>
   );
 });
