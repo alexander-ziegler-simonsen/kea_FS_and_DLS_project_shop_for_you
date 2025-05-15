@@ -76,72 +76,58 @@ const addSearchFilter = (query: any, searchText: string | undefined) => {
 };
 
 // -------------------- CREATE --------------------
-app.post('/api/groceries', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
+app.post('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
-    if (!req.file) return res.status(400).json({ error: 'Image file is required' });
+    // Expecting req.body.image to be the Imgur URL
+    const { name, type, price, description, amount, image } = req.body;
+    if (!image) return res.status(400).json({ error: 'Image URL is required' });
 
-    const imgurClientId = process.env.IMGUR_CLIENT_ID;
-    if (!imgurClientId) return res.status(500).json({ error: 'Imgur Client ID is not configured' });
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const groceryRepo = AppDataSource.getRepository(Grocery);
+    const nameRepo = AppDataSource.getRepository(GroceryName);
+    const imageRepo = AppDataSource.getRepository(GroceryImage);
+    const categoryRepo = AppDataSource.getRepository(Category);
+    const priceRepo = AppDataSource.getRepository(Price);
+    const descRepo = AppDataSource.getRepository(Description);
+    const amountRepo = AppDataSource.getRepository(Amount);
 
-    try {
-      const formData = new FormData();
-      formData.append('image', fs.createReadStream(req.file.path));
+    const grocery = groceryRepo.create({ createdAt: new Date() });
+    await groceryRepo.save(grocery);
 
-      const response = await axios.post('https://api.imgur.com/3/image', formData, {
-        headers: {
-          Authorization: `Client-ID ${imgurClientId}`,
-          ...formData.getHeaders(),
-        },
-      });
-
-      const imageUrl = response.data.data.link;
-
-      if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-      const groceryRepo = AppDataSource.getRepository(Grocery);
-      const nameRepo = AppDataSource.getRepository(GroceryName);
-      const imageRepo = AppDataSource.getRepository(GroceryImage);
-      const categoryRepo = AppDataSource.getRepository(Category);
-      const priceRepo = AppDataSource.getRepository(Price);
-      const descRepo = AppDataSource.getRepository(Description);
-      const amountRepo = AppDataSource.getRepository(Amount);
-
-      const grocery = groceryRepo.create({ createdAt: new Date() });
-      await groceryRepo.save(grocery);
-
-      const name = nameRepo.create({ name: req.body.name });
-      const image = imageRepo.create({ image: imageUrl });
-      let category = await categoryRepo.findOne({ where: { name: req.body.type } });
-      if (!category) {
-        category = categoryRepo.create({ name: req.body.type });
-        await categoryRepo.save(category);
-      }
-      const price = priceRepo.create({ price: parseFloat(req.body.price) });
-      const desc = descRepo.create({ description: req.body.description });
-      const amount = amountRepo.create({ amount: parseFloat(req.body.amount) });
-
-      await Promise.all([nameRepo.save(name), imageRepo.save(image), priceRepo.save(price), descRepo.save(desc), amountRepo.save(amount)]);
-
-      grocery.names = [name];
-      grocery.images = [image];
-      grocery.categories = [category];
-      grocery.prices = [price];
-      grocery.descriptions = [desc];
-      grocery.amounts = [amount];
-      await groceryRepo.save(grocery);
-
-      fs.unlinkSync(req.file.path);
-
-      const fullGrocery = await groceryRepo.findOne({
-        where: { id: grocery.id },
-        relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'amounts'],
-      });
-      if (fullGrocery) await publishToRabbit(fullGrocery);
-
-      res.json({ success: true, grocery: fullGrocery });
-    } catch (error) {
-      console.error('Imgur upload failed:', error);
-      res.status(500).json({ error: 'Failed to upload image to Imgur' });
+    const nameEntity = nameRepo.create({ name });
+    const imageEntity = imageRepo.create({ image });
+    let category = await categoryRepo.findOne({ where: { name: type } });
+    if (!category) {
+      category = categoryRepo.create({ name: type });
+      await categoryRepo.save(category);
     }
+    const priceEntity = priceRepo.create({ price: parseFloat(price) });
+    const descEntity = descRepo.create({ description });
+    const amountEntity = amountRepo.create({ amount: parseFloat(amount) });
+
+    await Promise.all([
+      nameRepo.save(nameEntity),
+      imageRepo.save(imageEntity),
+      priceRepo.save(priceEntity),
+      descRepo.save(descEntity),
+      amountRepo.save(amountEntity),
+    ]);
+
+    grocery.names = [nameEntity];
+    grocery.images = [imageEntity];
+    grocery.categories = [category];
+    grocery.prices = [priceEntity];
+    grocery.descriptions = [descEntity];
+    grocery.amounts = [amountEntity];
+    await groceryRepo.save(grocery);
+
+    const fullGrocery = await groceryRepo.findOne({
+      where: { id: grocery.id },
+      relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'amounts'],
+    });
+    if (fullGrocery) await publishToRabbit(fullGrocery);
+
+    res.json({ success: true, grocery: fullGrocery });
   })().catch(next);
 });
 

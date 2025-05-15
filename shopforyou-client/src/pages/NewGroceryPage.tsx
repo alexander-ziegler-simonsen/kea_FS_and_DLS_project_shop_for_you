@@ -66,18 +66,50 @@ const NewGroceryPage = () => {
     setIsError(false);
     setIsSuccess(false);
     setError(null);
-    const data = new FormData();
-    data.append('name', values.name);
+
+    let imageUrl = "";
     if (values.image) {
-      data.append('image', values.image);
+      try {
+        const imageFormData = new FormData();
+        imageFormData.append("image", values.image);
+        const serverResponse = await axios.post(
+          "http://localhost:3005/api/upload-to-imgur",
+          imageFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        imageUrl = serverResponse.data.link;
+      } catch (error) {
+        setIsLoading(false);
+        setIsError(true);
+        setError(error);
+        alert("Failed to upload image. Please try again.");
+        return;
+      }
     }
-    data.append('type', values.categoryId);
-    data.append('price', values.price);
-    data.append('description', values.description);
-    data.append('amount', values.amount);
+
+    const groceryData = {
+      name: values.name,
+      type: values.categoryId,
+      price: values.price,
+      description: values.description,
+      amount: values.amount,
+      image: imageUrl,
+    };
 
     try {
-      await axios.post('http://localhost:3005/api/groceries', data);
+      await axios.post(
+        'http://localhost:3005/api/groceries',
+        groceryData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       setIsSuccess(true);
       setIsLoading(false);
       setTimeout(() => navigate('/'), 1000);
