@@ -1,8 +1,8 @@
-import { DataSource } from 'typeorm';
+import { DataSource, Or } from 'typeorm';
 import 'dotenv/config';
-
 import { Order } from './entities/Order.js';
 import { Orderline } from './entities/Orderline.js';
+
 
 const connectionString = process.env.DATABASE_URL;
 

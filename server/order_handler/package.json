@@ -22,6 +22,7 @@
     "order_handler": "file:",
     "pg": "^8.11.4",
     "reflect-metadata": "^0.2.2",
+    "rhea": "^3.0.4",
     "typeorm": "^0.3.22",
     "user_handler": "file:"
   },

@@ -3,7 +3,10 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     Column,
+    ManyToMany,
+    JoinTable,
   } from 'typeorm';
+import { Orderline } from './Orderline.js';
   
 
   @Entity()
@@ -25,5 +28,9 @@ import {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @ManyToMany(() => Orderline, (orderline) => orderline.orders, { cascade: true })
+    @JoinTable()
+    orderlines: Orderline[];
   }
 

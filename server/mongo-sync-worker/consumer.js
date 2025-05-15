@@ -9,11 +9,13 @@ async function connectRabbit(retries = 8) {
 
   for (let i = 0; i < retries; i++) {
     try {
+      console.log(`Attempting to connect to RabbitMQ at ${url}`);
       const connection = await amqp.connect(url);
       console.log('✅ Connected to RabbitMQ');
       return connection;
     } catch (err) {
       console.log(`❌ RabbitMQ connection failed. Retry ${i + 1}/${retries}:`, err.message);
+      console.error('Full error details:', err);
       await sleep(3000);
     }
   }

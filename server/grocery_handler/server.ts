@@ -18,6 +18,7 @@ import { Amount } from './entities/Amount.js';
 import axios from 'axios';
 import FormData from 'form-data';
 import { SelectQueryBuilder } from 'typeorm';
+import { MongoClient } from 'mongodb';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -361,5 +362,49 @@ app.get('/api/categories', async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 });
+
+async function startQuantityUpdateConsumer() {
+  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  try {
+    const connection = await amqp.connect(url);
+    const channel = await connection.createChannel();
+    await channel.assertExchange('grocery-exchange', 'topic', { durable: true });
+
+    const queue = await channel.assertQueue('', { exclusive: true });
+    channel.bindQueue(queue.queue, 'grocery-exchange', 'grocery.quantity.update');
+
+    channel.consume(queue.queue, async (msg) => {
+      if (msg) {
+        const { groceryname, groceryamount } = JSON.parse(msg.content.toString());
+
+        if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+        const groceryRepo = AppDataSource.getRepository(Grocery);
+
+        const grocery = await groceryRepo.findOne({
+          where: { names: { name: groceryname } },
+          relations: ['amounts'],
+        });
+
+        if (grocery) {
+          grocery.amounts.forEach((amount) => {
+            amount.amount -= groceryamount;
+          });
+          await groceryRepo.save(grocery);
+          console.log(`Updated quantity for grocery: ${groceryname}`);
+        } else {
+          console.error(`Grocery not found: ${groceryname}`);
+        }
+
+        channel.ack(msg);
+      }
+    });
+
+    console.log('🚀 Listening for grocery.quantity.update messages...');
+  } catch (err) {
+    console.error('Failed to start quantity update consumer:', err);
+  }
+}
+
+startQuantityUpdateConsumer();
 
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));

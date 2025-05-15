@@ -3,7 +3,9 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     Column,
+    ManyToMany,
   } from 'typeorm';
+import { Orderline } from './Orderline';
   
 
   @Entity()
@@ -25,5 +27,8 @@ import {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @ManyToMany(() => Orderline, (orderline) => orderline.orders, { cascade: true })
+    orderlines: Orderline[];
   }
 

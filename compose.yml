@@ -38,6 +38,11 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   sfu-pgadmin:
     image: dpage/pgadmin4
@@ -107,6 +112,20 @@ services:
     networks:
       - backend
 
+  order_consumer:
+    build:
+      context: ./server/order-consumer
+      dockerfile: dockerfile
+    environment:
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
+    depends_on:
+      - sfu-rabbitmq
+    networks:
+      - backend
+
   grocery_handler:
     build:
       context: ./server/grocery_handler
@@ -153,6 +172,7 @@ services:
     volumes:
       - ./shopforyou-client:/app
       - /app/node_modules
+
   user_handler:
     build:
       context: ./server/user_handler
@@ -195,6 +215,11 @@ services:
       POST_PORT: ${POST_PORT}
       POST_DB: ${POST_DB}
       DATABASE_URL: ${POST_DATABASE_URL}
+      RABBIT_USERNAME: ${RABBIT_USERNAME}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT}
+
 
 volumes:
   mongodata:

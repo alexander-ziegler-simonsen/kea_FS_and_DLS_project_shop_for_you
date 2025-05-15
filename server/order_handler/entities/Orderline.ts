@@ -1,18 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany } from 'typeorm';
+import { Order } from './Order.js';
 
 @Entity()
 export class Orderline {
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Column({ type: "varchar", unique: true })
-    username: string;
-
-    @Column({ type: "varchar", unique: true })
-    email: string;
-
-    @Column({ type: "varchar", nullable: true })
-    address: string;
 
     @Column()
     groceryname: string;
@@ -20,6 +12,9 @@ export class Orderline {
     @Column()
     groceryamount: string;
 
-    @Column()
-    pricename: string;
+    @Column('float')
+    price: number;
+
+    @ManyToMany(() => Order, (order) => order.orderlines)
+    orders: Order[];
 }
