@@ -78,7 +78,7 @@ const addSearchFilter = (query: any, searchText: string | undefined) => {
 // -------------------- CREATE --------------------
 app.post('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
-    // Expecting req.body.image to be the Imgur URL
+    // Accept type as an array of category names
     const { name, type, price, description, amount, image } = req.body;
     if (!image) return res.status(400).json({ error: 'Image URL is required' });
 
@@ -96,11 +96,27 @@ app.post('/api/groceries', (req: Request, res: Response, next: NextFunction) => 
 
     const nameEntity = nameRepo.create({ name });
     const imageEntity = imageRepo.create({ image });
-    let category = await categoryRepo.findOne({ where: { name: type } });
-    if (!category) {
-      category = categoryRepo.create({ name: type });
-      await categoryRepo.save(category);
+
+    // Handle multiple categories
+    let categories: Category[] = [];
+    if (Array.isArray(type)) {
+      for (const catName of type) {
+        let category = await categoryRepo.findOne({ where: { name: catName } });
+        if (!category) {
+          category = categoryRepo.create({ name: catName });
+          await categoryRepo.save(category);
+        }
+        categories.push(category);
+      }
+    } else if (typeof type === 'string') {
+      let category = await categoryRepo.findOne({ where: { name: type } });
+      if (!category) {
+        category = categoryRepo.create({ name: type });
+        await categoryRepo.save(category);
+      }
+      categories.push(category);
     }
+
     const priceEntity = priceRepo.create({ price: parseFloat(price) });
     const descEntity = descRepo.create({ description });
     const amountEntity = amountRepo.create({ amount: parseFloat(amount) });
@@ -115,7 +131,7 @@ app.post('/api/groceries', (req: Request, res: Response, next: NextFunction) => 
 
     grocery.names = [nameEntity];
     grocery.images = [imageEntity];
-    grocery.categories = [category];
+    grocery.categories = categories;
     grocery.prices = [priceEntity];
     grocery.descriptions = [descEntity];
     grocery.amounts = [amountEntity];

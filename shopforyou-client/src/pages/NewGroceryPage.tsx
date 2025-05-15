@@ -93,7 +93,7 @@ const NewGroceryPage = () => {
 
     const groceryData = {
       name: values.name,
-      type: values.categoryId,
+      type: values.categoryIds, // now an array
       price: values.price,
       description: values.description,
       amount: values.amount,
@@ -130,7 +130,7 @@ const NewGroceryPage = () => {
           initialValues={{
             name: '',
             image: null,
-            categoryId: '',
+            categoryIds: [], // changed from categoryId: ''
             price: '',
             description: '',
             amount: '',

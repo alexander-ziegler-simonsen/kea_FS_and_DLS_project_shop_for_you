@@ -11,6 +11,10 @@ import {
   Input,
   Select,
   Textarea,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  HStack,
 } from "@chakra-ui/react";
 
 interface Category {
@@ -22,7 +26,7 @@ interface GroceryFormProps {
   initialValues: {
     name: string;
     image: File | null;
-    categoryId: string;
+    categoryIds: string[];
     price: string;
     description: string;
     amount: string;
@@ -51,13 +55,14 @@ const GroceryForm = ({
   successMessage = "Grocery added successfully!",
 }: GroceryFormProps) => {
   const [formValues, setFormValues] = useState(initialValues);
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
 
   useEffect(() => {
     setFormValues(initialValues);
   }, [initialValues]);
 
-  const handleChange = (field: string, value: string | File | null) => {
+  const handleChange = (field: string, value: string | File | null | string[]) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -65,13 +70,22 @@ const GroceryForm = ({
     handleChange("image", e.target.files ? e.target.files[0] : null);
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target.value === "add-new") {
-      setIsAddingCategory(true);
-      handleChange("categoryId", "");
-    } else {
-      handleChange("categoryId", e.target.value);
+  const handleAddCategory = () => {
+    if (
+      selectedCategory &&
+      !formValues.categoryIds.includes(selectedCategory)
+    ) {
+      handleChange("categoryIds", [...formValues.categoryIds, selectedCategory]);
+      setSelectedCategory("");
+      setIsAddingNewCategory(false);
     }
+  };
+
+  const handleRemoveCategory = (cat: string) => {
+    handleChange(
+      "categoryIds",
+      formValues.categoryIds.filter((c) => c !== cat)
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -110,29 +124,58 @@ const GroceryForm = ({
             <FormLabel>Image</FormLabel>
             <Input type="file" onChange={handleFileChange} />
           </FormControl>
-          <FormControl isRequired>
-            <FormLabel>Category</FormLabel>
-            {isAddingCategory ? (
-              <Input
-                type="text"
-                value={formValues.categoryId}
-                onChange={(e) => handleChange("categoryId", e.target.value)}
-                placeholder="Enter new category"
-              />
-            ) : (
+          <FormControl isRequired={false}>
+            <FormLabel>Add Category</FormLabel>
+            <HStack>
               <Select
-                value={formValues.categoryId}
-                onChange={handleCategoryChange}
+                placeholder="Select category"
+                value={selectedCategory}
+                onChange={(e) => {
+                  if (e.target.value === "__add_new__") {
+                    setSelectedCategory("");
+                    setIsAddingNewCategory(true);
+                  } else {
+                    setSelectedCategory(e.target.value);
+                  }
+                }}
               >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.name}>
-                    {category.name}
-                  </option>
-                ))}
-                <option value="add-new">Add New Category</option>
+                {categories
+                  .filter((cat) => !formValues.categoryIds.includes(cat.name))
+                  .map((category) => (
+                    <option key={category.id} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
+                <option value="__add_new__">Add new category...</option>
               </Select>
+              <Button onClick={handleAddCategory} colorScheme="teal" disabled={isAddingNewCategory && !selectedCategory}>
+                Add
+              </Button>
+            </HStack>
+            {isAddingNewCategory && (
+              <Input
+                mt={2}
+                placeholder="Enter new category name"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && selectedCategory) {
+                    handleAddCategory();
+                    setIsAddingNewCategory(false);
+                  }
+                }}
+                autoFocus
+              />
             )}
+            <FormLabel mt={2}>Selected Categories</FormLabel>
+            <HStack wrap="wrap">
+              {formValues.categoryIds.map((cat) => (
+                <Tag key={cat} colorScheme="teal" borderRadius="full">
+                  <TagLabel>{cat}</TagLabel>
+                  <TagCloseButton onClick={() => handleRemoveCategory(cat)} />
+                </Tag>
+              ))}
+            </HStack>
           </FormControl>
           <FormControl isRequired>
             <FormLabel>Price</FormLabel>
