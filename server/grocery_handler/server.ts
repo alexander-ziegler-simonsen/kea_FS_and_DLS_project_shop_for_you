@@ -17,6 +17,7 @@ import { Deleted_Grocery } from './entities/Deleted_Grocery.js';
 import { Amount } from './entities/Amount.js';
 import axios from 'axios';
 import FormData from 'form-data';
+import { connectMongo } from './mongo-connection.js';
 import { SelectQueryBuilder } from 'typeorm';
 import { MongoClient } from 'mongodb';
 
@@ -54,50 +55,23 @@ async function publishToRabbit(grocery: any) {
   }
 }
 
-const addOrdering = (queryBuilder: SelectQueryBuilder<Grocery>, ordering: string | undefined) => {
-  if (!ordering) {
-    return;
-  }
-  if (ordering === "price-asc") {
-    queryBuilder.orderBy("price.price", "ASC");
-  }
-  if (ordering === "price-desc") {
-    queryBuilder.orderBy("price.price", "DESC");
-  }
-  if (ordering === "name-asc") {
-    queryBuilder.orderBy("name.name", "ASC");
-  }
-  if (ordering === "name-desc") {
-    queryBuilder.orderBy("name.name", "DESC");
-  }
+const addOrdering = (sort: any, ordering: string | undefined) => {
+  if (!ordering) return;
+  if (ordering === 'price-asc') sort['prices.0.price'] = 1; // Sort by the first price in the array
+  if (ordering === 'price-desc') sort['prices.0.price'] = -1;
+  if (ordering === 'name-asc') sort['names.0.name'] = 1; // Sort by the first name in the array
+  if (ordering === 'name-desc') sort['names.0.name'] = -1;
 };
 
-const addCategoryFilter = (
-  queryBuilder: SelectQueryBuilder<Grocery>,
-  categoryId: string | undefined
-) => {
+const addCategoryFilter = (query: any, categoryId: string | undefined) => {
   if (categoryId) {
-    queryBuilder.andWhere((qb) => {
-      const subQuery = qb
-        .subQuery()
-        .select("grocery.id")
-        .from(Grocery, "grocery")
-        .leftJoin("grocery.categories", "categories")
-        .where("categories.id = :categoryId", { categoryId })
-        .getQuery();
-      return "grocery.id IN " + subQuery;
-    });
+    query.categories = { $elemMatch: { id: parseInt(categoryId) } }; // Match any category with the given ID
   }
 };
 
-const addSearchFilter = (
-  queryBuilder: SelectQueryBuilder<Grocery>,
-  searchText: string | undefined
-) => {
+const addSearchFilter = (query: any, searchText: string | undefined) => {
   if (searchText) {
-    queryBuilder.andWhere("name.name ILIKE :searchText", {
-      searchText: `%${searchText}%`,
-    });
+    query['names.0.name'] = { $regex: searchText, $options: 'i' }; // Search by the first name in the array
   }
 };
 
@@ -175,8 +149,9 @@ app.post('/api/groceries', upload.single('image'), (req: Request, res: Response,
 app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
     try {
-      if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-      const groceryRepo = AppDataSource.getRepository(Grocery);
+      const mongoClient = await connectMongo();
+      const db = mongoClient.db(process.env.MON_DB || 'mirror');
+      const groceriesCollection = db.collection('groceries');
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -185,24 +160,21 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
       const categoryId = req.query.categoryId as string | undefined;
       const searchText = req.query.searchText as string | undefined;
 
-      const queryBuilder = groceryRepo.createQueryBuilder("grocery")
-        .leftJoinAndSelect("grocery.names", "name")
-        .leftJoinAndSelect("grocery.prices", "price")
-        .leftJoinAndSelect("grocery.images", "image")
-        .leftJoinAndSelect("grocery.categories", "category")
-        .leftJoinAndSelect("grocery.descriptions", "description")
-        .leftJoinAndSelect("grocery.amounts", "amount")
+      const sort: any = {};
+      const query: any = {};
+
+      addOrdering(sort, ordering);
+      addCategoryFilter(query, categoryId);
+      addSearchFilter(query, searchText);
+
+      const groceries = await groceriesCollection
+        .find(query)
+        .sort(sort)
         .skip(skip)
-        .take(limit);
+        .limit(limit)
+        .toArray();
 
-      addOrdering(queryBuilder, ordering);
-      addCategoryFilter(queryBuilder, categoryId);
-      addSearchFilter(queryBuilder, searchText);
-
-      console.log("Generated SQL Query:", queryBuilder.getSql()); // Debugging log
-
-      const [groceries, totalItems] = await queryBuilder.getManyAndCount();
-
+      const totalItems = await groceriesCollection.countDocuments(query);
       const totalPages = Math.ceil(totalItems / limit);
       const nextPage = page < totalPages ? page + 1 : null;
 
@@ -213,9 +185,11 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
         totalPages,
         nextPage,
       });
+
+      await mongoClient.close();
     } catch (error) {
-      console.error("Error fetching groceries:", error); // Log the error
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error('Error fetching groceries from MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   })().catch(next);
 });
@@ -223,14 +197,21 @@ app.get('/api/groceries', (req: Request, res: Response, next: NextFunction) => {
 // -------------------- GET ONE --------------------
 app.get('/api/groceries/:id', (req: Request, res: Response, next: NextFunction) => {
   (async () => {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-    const groceryRepo = AppDataSource.getRepository(Grocery);
-    const grocery = await groceryRepo.findOne({
-      where: { id: Number(req.params.id) },
-      relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'amounts'],
-    });
-    if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
-    res.json(grocery);
+    try {
+      const mongoClient = await connectMongo();
+      const db = mongoClient.db(process.env.MON_DB || 'mirror');
+      const groceriesCollection = db.collection('groceries');
+
+      const grocery = await groceriesCollection.findOne({ id: parseInt(req.params.id) });
+
+      if (!grocery) return res.status(404).json({ error: 'Grocery not found' });
+
+      res.json(grocery);
+      await mongoClient.close();
+    } catch (error) {
+      console.error('Error fetching grocery from MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   })().catch(next);
 });
 
@@ -350,17 +331,57 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
 // -------------------- GET UNIQUE CATEGORIES --------------------
 app.get('/api/categories', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-    const categoryRepo = AppDataSource.getRepository(Category);
+    const mongoClient = await connectMongo();
+    const db = mongoClient.db(process.env.MON_DB || 'mirror');
+    const groceriesCollection = db.collection('groceries');
 
-    // Fetch all unique categories with id and name
-    const categories = await categoryRepo.find({ select: ['id', 'name'] });
+    // Fetch all unique categories from the groceries collection in alphabetical order
+    const categories = await groceriesCollection.aggregate([
+      { $unwind: "$categories" }, // Unwind the categories array
+      { $group: { _id: "$categories.id", name: { $first: "$categories.name" } } }, // Group by category ID
+      { $project: { id: "$_id", name: 1, _id: 0 } }, // Format the output
+      { $sort: { name: 1 } } // Sort by name in ascending order
+    ]).toArray();
 
     res.json({ categories });
+    await mongoClient.close();
   } catch (error) {
-    console.error('Failed to fetch categories:', error);
+    console.error('Failed to fetch categories from MongoDB:', error);
     next(error);
   }
+});
+
+// -------------------- UPLOAD TO IMGUR --------------------
+app.post('/api/upload-to-imgur', upload.single('image'), (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image file is required' });
+    }
+
+    const imgurClientId = process.env.IMGUR_CLIENT_ID;
+    if (!imgurClientId) {
+      return res.status(500).json({ error: 'Imgur Client ID is not configured' });
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('image', fs.createReadStream(req.file.path));
+
+      const response = await axios.post('https://api.imgur.com/3/image', formData, {
+        headers: {
+          Authorization: `Client-ID ${imgurClientId}`,
+          ...formData.getHeaders(),
+        },
+      });
+
+      const imageUrl = response.data.data.link;
+      fs.unlinkSync(req.file.path); // Clean up the uploaded file
+      res.json({ link: imageUrl });
+    } catch (error) {
+      console.error('Failed to upload image to Imgur:', error);
+      res.status(500).json({ error: 'Failed to upload image to Imgur' });
+    }
+  })().catch(next);
 });
 
 async function startQuantityUpdateConsumer() {
