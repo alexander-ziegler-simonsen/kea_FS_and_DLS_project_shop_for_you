@@ -235,20 +235,23 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
     });
     if (!existingGrocery) return res.status(404).json({ error: 'Grocery not found' });
 
-    // --- Special handling for categories: overwrite to match exactly the update request ---
+    // --- Special handling for categories: overwrite only if changed ---
     if (Array.isArray(req.body.categories)) {
-      const categoryNames = req.body.categories.map((cat: any) => cat.name);
-      const categories = [];
-      for (const catName of categoryNames) {
-        let category = await categoryRepo.findOne({ where: { name: catName } });
-        if (!category) {
-          category = categoryRepo.create({ name: catName });
-          await categoryRepo.save(category);
+      const categoryNames = req.body.categories.map((cat: any) => cat.name).sort();
+      const currentCategoryNames = (existingGrocery.categories || []).map((cat: any) => cat.name).sort();
+      const isCategoriesChanged = JSON.stringify(categoryNames) !== JSON.stringify(currentCategoryNames);
+      if (isCategoriesChanged) {
+        const categories = [];
+        for (const catName of categoryNames) {
+          let category = await categoryRepo.findOne({ where: { name: catName } });
+          if (!category) {
+            category = categoryRepo.create({ name: catName });
+            await categoryRepo.save(category);
+          }
+          categories.push(category);
         }
-        categories.push(category);
+        existingGrocery.categories = categories;
       }
-      // Overwrite: only these categories will be linked
-      existingGrocery.categories = categories;
     }
 
     // --- Update other array fields as before ---
@@ -271,12 +274,90 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       }
     };
 
-    await updateArrayField('names', nameRepo, req.body.names);
-    await updateArrayField('images', imageRepo, req.body.images);
-    // categories handled above
-    await updateArrayField('prices', priceRepo, req.body.prices);
-    await updateArrayField('descriptions', descRepo, req.body.descriptions);
-    await updateArrayField('amounts', amountRepo, req.body.amounts);
+    // --- Dirty-checking and add-only update for names ---
+    if (Array.isArray(req.body.names)) {
+      const newNames = req.body.names.map((n: any) => n.name);
+      const currentNames = (existingGrocery.names || []).map((n: any) => n.name);
+      const namesToAdd = newNames.filter((name: string) => !currentNames.includes(name));
+      if (namesToAdd.length > 0) {
+        for (const name of namesToAdd) {
+          let nameEntity = await nameRepo.findOne({ where: { name } });
+          if (!nameEntity) {
+            nameEntity = nameRepo.create({ name });
+            await nameRepo.save(nameEntity);
+          }
+          existingGrocery.names.push(nameEntity);
+        }
+      }
+    }
+
+    // --- Dirty-checking and add-only update for images ---
+    if (Array.isArray(req.body.images)) {
+      const newImages = req.body.images.map((img: any) => img.image);
+      const currentImages = (existingGrocery.images || []).map((img: any) => img.image);
+      const imagesToAdd = newImages.filter((image: string) => !currentImages.includes(image));
+      if (imagesToAdd.length > 0) {
+        for (const image of imagesToAdd) {
+          let imageEntity = await imageRepo.findOne({ where: { image } });
+          if (!imageEntity) {
+            imageEntity = imageRepo.create({ image });
+            await imageRepo.save(imageEntity);
+          }
+          existingGrocery.images.push(imageEntity);
+        }
+      }
+    }
+
+    // --- Dirty-checking and add-only update for prices ---
+    if (Array.isArray(req.body.prices)) {
+      const newPrices = req.body.prices.map((p: any) => p.price);
+      const currentPrices = (existingGrocery.prices || []).map((p: any) => p.price);
+      const pricesToAdd = newPrices.filter((price: number) => !currentPrices.includes(price));
+      if (pricesToAdd.length > 0) {
+        for (const price of pricesToAdd) {
+          let priceEntity = await priceRepo.findOne({ where: { price } });
+          if (!priceEntity) {
+            priceEntity = priceRepo.create({ price });
+            await priceRepo.save(priceEntity);
+          }
+          existingGrocery.prices.push(priceEntity);
+        }
+      }
+    }
+
+    // --- Dirty-checking and add-only update for descriptions ---
+    if (Array.isArray(req.body.descriptions)) {
+      const newDescs = req.body.descriptions.map((d: any) => d.description);
+      const currentDescs = (existingGrocery.descriptions || []).map((d: any) => d.description);
+      const descsToAdd = newDescs.filter((description: string) => !currentDescs.includes(description));
+      if (descsToAdd.length > 0) {
+        for (const description of descsToAdd) {
+          let descEntity = await descRepo.findOne({ where: { description } });
+          if (!descEntity) {
+            descEntity = descRepo.create({ description });
+            await descRepo.save(descEntity);
+          }
+          existingGrocery.descriptions.push(descEntity);
+        }
+      }
+    }
+
+    // --- Dirty-checking and add-only update for amounts ---
+    if (Array.isArray(req.body.amounts)) {
+      const newAmounts = req.body.amounts.map((a: any) => a.amount);
+      const currentAmounts = (existingGrocery.amounts || []).map((a: any) => a.amount);
+      const amountsToAdd = newAmounts.filter((amount: number) => !currentAmounts.includes(amount));
+      if (amountsToAdd.length > 0) {
+        for (const amount of amountsToAdd) {
+          let amountEntity = await amountRepo.findOne({ where: { amount } });
+          if (!amountEntity) {
+            amountEntity = amountRepo.create({ amount });
+            await amountRepo.save(amountEntity);
+          }
+          existingGrocery.amounts.push(amountEntity);
+        }
+      }
+    }
 
     await groceryRepo.save(existingGrocery);
 
