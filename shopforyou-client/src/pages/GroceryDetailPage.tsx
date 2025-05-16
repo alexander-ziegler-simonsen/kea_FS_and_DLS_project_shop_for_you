@@ -6,20 +6,36 @@ import GroceryAttributes from "../domain/grocery/GroceryAttributes";
 import useGrocery from "../domain/grocery/useGrocery";
 import axios from "axios";
 import GroceryUpdateForm from "../forms/GroceryUpdateForm";
+import useCategories from "../domain/category/useCategories";
+import type { Category } from "../domain/category/Category";
 
 const GroceryDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: grocery, error, isLoading } = useGrocery(Number(id));
+  const { data: categoriesData } = useCategories();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUpdateFormVisible, setIsUpdateFormVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Defensive fallback for categories array (robust for all API shapes)
+  let categories: Category[] = [];
+  if (Array.isArray(categoriesData)) {
+    categories = categoriesData;
+  } else if (categoriesData && typeof categoriesData === 'object') {
+    if (Array.isArray((categoriesData as any).categories)) {
+      categories = (categoriesData as any).categories;
+    } else if (Array.isArray((categoriesData as any).results)) {
+      categories = (categoriesData as any).results;
+    }
+  }
+
+  // Update formData to use categoryIds: string[]
   const [formData, setFormData] = useState({
     name: grocery?.names[0]?.name || "",
     price: String(grocery?.prices[0]?.price || ""),
     description: grocery?.descriptions[0]?.description || "",
     amount: String(grocery?.amounts[0]?.amount || ""),
-    type: grocery?.categories[0]?.name || "",
+    categoryIds: grocery?.categories?.map((cat) => cat.name) || [],
   });
 
   useEffect(() => {
@@ -45,7 +61,7 @@ const GroceryDetailPage = () => {
             price: String(groceryData.prices[0]?.price || ""),
             description: groceryData.descriptions[0]?.description || "",
             amount: String(groceryData.amounts[0]?.amount || ""),
-            type: groceryData.categories[0]?.name || "",
+            categoryIds: groceryData.categories?.map((cat: any) => cat.name) || [],
           });
         } catch (error) {
           console.error("Failed to fetch grocery data:", error);
@@ -56,9 +72,9 @@ const GroceryDetailPage = () => {
     }
   }, [isUpdateFormVisible, id]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  // Update input change handler for new formData structure
+  const handleInputChange = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +97,7 @@ const GroceryDetailPage = () => {
         prices: [{ price: parseFloat(formData.price) }],
         descriptions: [{ description: formData.description }],
         amounts: [{ amount: parseInt(formData.amount, 10) }],
-        categories: [{ name: formData.type }],
+        categories: formData.categoryIds.map((name) => ({ name })),
       };
 
       if (selectedFile) {
@@ -182,16 +198,11 @@ const GroceryDetailPage = () => {
       <GroceryUpdateForm
         isOpen={isUpdateFormVisible}
         onClose={() => setIsUpdateFormVisible(false)}
-        formData={{
-          name: formData.name,
-          price: formData.price,
-          description: formData.description,
-          amount: formData.amount,
-          type: formData.type,
-        }}
+        formData={formData}
         onInputChange={handleInputChange}
         onFileChange={handleFileChange}
         onSubmit={handleUpdate}
+        categories={categories}
       />
     </>
   );
