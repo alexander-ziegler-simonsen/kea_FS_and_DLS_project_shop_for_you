@@ -235,24 +235,20 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
     });
     if (!existingGrocery) return res.status(404).json({ error: 'Grocery not found' });
 
-    // --- Special handling for categories: merge new by name, create if missing, do not remove existing ---
+    // --- Special handling for categories: overwrite to match exactly the update request ---
     if (Array.isArray(req.body.categories)) {
       const categoryNames = req.body.categories.map((cat: any) => cat.name);
-      // Get current categories (by name for easy comparison)
-      const currentCategories = existingGrocery.categories || [];
-      const currentCategoryNames = currentCategories.map((cat: any) => cat.name);
+      const categories = [];
       for (const catName of categoryNames) {
-        if (!currentCategoryNames.includes(catName)) {
-          let category = await categoryRepo.findOne({ where: { name: catName } });
-          if (!category) {
-            category = categoryRepo.create({ name: catName });
-            await categoryRepo.save(category);
-          }
-          currentCategories.push(category);
+        let category = await categoryRepo.findOne({ where: { name: catName } });
+        if (!category) {
+          category = categoryRepo.create({ name: catName });
+          await categoryRepo.save(category);
         }
+        categories.push(category);
       }
-      // Do NOT remove any existing categories
-      existingGrocery.categories = currentCategories;
+      // Overwrite: only these categories will be linked
+      existingGrocery.categories = categories;
     }
 
     // --- Update other array fields as before ---

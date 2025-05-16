@@ -113,12 +113,7 @@ channel.consume('grocery-queue-updated', async (msg) => {
                 )];
             }
 
-            // Process the grocery object to only keep the latest category
-            if (grocery.categories && Array.isArray(grocery.categories)) {
-                grocery.categories = [grocery.categories.reduce((latest, current) =>
-                    new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
-                )];
-            }
+            // Do NOT reduce categories, keep all
 
             // Process the grocery object to only keep the latest price
             if (grocery.prices && Array.isArray(grocery.prices)) {
