@@ -235,31 +235,49 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
     });
     if (!existingGrocery) return res.status(404).json({ error: 'Grocery not found' });
 
+    // --- Special handling for categories: merge new by name, create if missing, do not remove existing ---
+    if (Array.isArray(req.body.categories)) {
+      const categoryNames = req.body.categories.map((cat: any) => cat.name);
+      // Get current categories (by name for easy comparison)
+      const currentCategories = existingGrocery.categories || [];
+      const currentCategoryNames = currentCategories.map((cat: any) => cat.name);
+      for (const catName of categoryNames) {
+        if (!currentCategoryNames.includes(catName)) {
+          let category = await categoryRepo.findOne({ where: { name: catName } });
+          if (!category) {
+            category = categoryRepo.create({ name: catName });
+            await categoryRepo.save(category);
+          }
+          currentCategories.push(category);
+        }
+      }
+      // Do NOT remove any existing categories
+      existingGrocery.categories = currentCategories;
+    }
+
+    // --- Update other array fields as before ---
     const updateArrayField = async <T extends { id: number }>(
       field: keyof Grocery,
       repo: { create: (data: T) => T; save: (data: T) => Promise<T> },
       newData: T[]
     ) => {
-      if (newData) {
+      if (newData && field !== 'categories') { // skip categories, handled above
         const existingField = (existingGrocery[field] as unknown) as T[];
         const updatedField = existingField.map((item) =>
           newData.find((newItem) => newItem.id === item.id) || item
         );
-
-        // Add new items that don't exist in the current array
         newData.forEach((newItem) => {
           if (!updatedField.some((item) => item.id === newItem.id)) {
             updatedField.push(repo.create(newItem));
           }
         });
-
         existingGrocery[field] = updatedField as any;
       }
     };
 
     await updateArrayField('names', nameRepo, req.body.names);
     await updateArrayField('images', imageRepo, req.body.images);
-    await updateArrayField('categories', categoryRepo, req.body.categories);
+    // categories handled above
     await updateArrayField('prices', priceRepo, req.body.prices);
     await updateArrayField('descriptions', descRepo, req.body.descriptions);
     await updateArrayField('amounts', amountRepo, req.body.amounts);
