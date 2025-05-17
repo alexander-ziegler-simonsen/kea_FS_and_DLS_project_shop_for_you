@@ -62,9 +62,22 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
           orderlines
         })
       });
+      // Update grocery amounts in backend
+      await Promise.all(cartItems.map(async (item) => {
+        // Calculate new amount (never below 0)
+        const newAmount = Math.max(0, (item.amount ?? 0) - item.quantity);
+        await fetch(`http://localhost:3005/api/groceries/update/${item.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amounts: [{ amount: newAmount }]
+          })
+        });
+      }));
       useCartStore.getState().clearCart();
       closeModal();
       onClose();
+      window.location.reload(); // Reload the page after successful order
     } catch (e) {
       alert("Order failed. Please try again.");
     } finally {
