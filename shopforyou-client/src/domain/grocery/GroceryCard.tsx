@@ -18,6 +18,8 @@ const GroceryCard = ({ grocery }: Props) => {
   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
 
+  const price = grocery.price ?? 0;
+
   const handleAddToCart = (e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -25,9 +27,9 @@ const GroceryCard = ({ grocery }: Props) => {
     }
     addToCart({
       id: String(grocery.id),
-      name: grocery.names?.[0]?.name || "",
-      price: grocery.prices?.[0]?.price ?? 0,
-      image: grocery.images?.[0]?.image || "",
+      name: grocery.name || "",
+      price: grocery.price ?? 0,
+      image: grocery.image || "",
       amount: grocery.amounts?.[0]?.amount ?? 0, // Pass amount to cart
     });
   };
@@ -54,15 +56,21 @@ const GroceryCard = ({ grocery }: Props) => {
             </Button>
           ) : (
             <HStack>
-              <Button onClick={() => decreaseQuantity(grocery.id)} colorScheme="teal" size="sm" borderRadius="full" minW={8} minH={8} fontSize="lg">-</Button>
+              <Button onClick={(e) => { e.stopPropagation(); e.preventDefault();
+                if (cartQuantity > 1) {
+                  decreaseQuantity(String(grocery.id));
+                } else if (cartQuantity === 1) {
+                  removeFromCart(String(grocery.id));
+                }
+              }} colorScheme="teal" size="sm" borderRadius="full" minW={8} minH={8} fontSize="lg">-</Button>
               <Text fontWeight="bold">{cartQuantity}</Text>
-              <Button onClick={() => increaseQuantity(grocery.id)} colorScheme="teal" size="sm" borderRadius="full" minW={8} minH={8} fontSize="lg">+</Button>
-              <Button variant="ghost" colorScheme="red" size="sm" onClick={() => removeFromCart(grocery.id)}>
+              <Button onClick={(e) => { e.stopPropagation(); e.preventDefault(); increaseQuantity(String(grocery.id)); }} colorScheme="teal" size="sm" borderRadius="full" minW={8} minH={8} fontSize="lg">+</Button>
+              <Button variant="ghost" colorScheme="red" size="sm" onClick={(e) => { e.stopPropagation(); e.preventDefault(); removeFromCart(String(grocery.id)); }}>
                 &#10005;
               </Button>
             </HStack>
           )}
-          <Text color="green.500" fontWeight="bold">${grocery.price.toFixed(2)}</Text>
+          <Text color="green.500" fontWeight="bold">${price.toFixed(2)}</Text>
         </HStack>
       </CardBody>
     </Card>

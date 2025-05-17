@@ -21,7 +21,6 @@ const useCartStore = create<CartState>((set) => ({
   items: [],
   addToCart: (item) =>
     set((state) => {
-      console.log('addToCart called with id:', item.id, 'type:', typeof item.id);
       const existing = state.items.find((i) => i.id === item.id);
       if (existing) {
         // Only update quantity, do not overwrite name/price/image
