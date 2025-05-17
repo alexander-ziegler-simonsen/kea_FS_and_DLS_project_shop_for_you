@@ -1,6 +1,7 @@
 import { Box, Flex, SimpleGrid, Text, Badge, Button, Divider, Stack, Heading } from "@chakra-ui/react";
 import { Grocery } from "./Grocery";
 import useCartStore from "../order/cartStore";
+import { useState } from "react";
 
 interface Props {
   grocery: Grocery;
@@ -19,7 +20,16 @@ const GroceryAttributes = ({ grocery }: Props) => {
   // Nutrition info: try to extract from grocery.nutrition if available, else fallback to empty
   const nutrition = grocery.nutrition || [];
 
+  // Get the current quantity of this grocery in the cart
+  const cartQuantity = useCartStore((state) => {
+    const item = state.items.find((i) => i.id === grocery.id);
+    return item ? item.quantity : 0;
+  });
   const addToCart = useCartStore((state) => state.addToCart);
+  const increaseQuantity = useCartStore((state) => state.increaseQuantity);
+  const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+
   const handleAddToCart = (e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -31,6 +41,18 @@ const GroceryAttributes = ({ grocery }: Props) => {
       price: grocery.prices[0]?.price || 0,
       image: grocery.images[0]?.image || "",
     });
+  };
+
+  const handleIncrement = () => {
+    increaseQuantity(grocery.id);
+  };
+
+  const handleDecrement = () => {
+    if (cartQuantity > 1) {
+      decreaseQuantity(grocery.id);
+    } else if (cartQuantity === 1) {
+      removeFromCart(grocery.id);
+    }
   };
 
   return (
@@ -66,7 +88,18 @@ const GroceryAttributes = ({ grocery }: Props) => {
           <Text color="green.600" fontWeight="semibold" mb={2}>{grocery.prices[0].label}</Text>
         )}
         <Flex gap={2} mb={4}>
-          <Button colorScheme="green" onClick={handleAddToCart}>Add to cart</Button>
+          {cartQuantity === 0 ? (
+            <Button colorScheme="green" onClick={handleAddToCart}>Add to cart</Button>
+          ) : (
+            <Flex align="center" gap={2} bg={"gray.900"} _dark={{ bg: "gray.700" }} _light={{ bg: "gray.100" }} p={2} borderRadius="lg">
+              <Button onClick={handleDecrement} borderRadius="full" bg="gray.300" minW={12} minH={12} fontSize="2xl" color="black" _hover={{ bg: 'gray.400' }}>-</Button>
+              <Text color="white" fontSize="2xl" fontWeight="bold">{cartQuantity}</Text>
+              <Button onClick={handleIncrement} borderRadius="full" bg="gray.300" minW={12} minH={12} fontSize="2xl" color="black" _hover={{ bg: 'gray.400' }}>+</Button>
+              <Button variant="ghost" colorScheme="red" fontSize="2xl" ml={2} onClick={() => removeFromCart(grocery.id)}>
+                &#10005;
+              </Button>
+            </Flex>
+          )}
         </Flex>
         <Divider my={4} />
         {/* Product details */}
