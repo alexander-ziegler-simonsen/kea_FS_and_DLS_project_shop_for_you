@@ -136,6 +136,7 @@ const GroceryForm = ({
                     setIsAddingNewCategory(true);
                   } else {
                     setSelectedCategory(e.target.value);
+                    setIsAddingNewCategory(false); // Hide free text input if another category is selected
                   }
                 }}
               >
