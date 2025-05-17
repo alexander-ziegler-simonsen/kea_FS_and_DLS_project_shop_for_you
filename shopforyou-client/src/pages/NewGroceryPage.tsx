@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
-import GroceryForm from "../components/GroceryForm";
+import GroceryForm from '../forms/GroceryForm';
 import { Box, Spinner } from "@chakra-ui/react";
 
 interface Category {
