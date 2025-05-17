@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, FormControl, FormLabel, Input, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Select, Tag, TagLabel, TagCloseButton, HStack } from "@chakra-ui/react";
+import { Button, FormControl, FormLabel, Input, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Select, Tag, TagLabel, TagCloseButton, HStack, SimpleGrid } from "@chakra-ui/react";
 
 interface Category {
   id: number;
@@ -20,6 +20,7 @@ interface GroceryUpdateFormProps {
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: () => void;
   categories: Category[];
+  isLoading: boolean;
 }
 
 const GroceryUpdateForm: React.FC<GroceryUpdateFormProps> = ({
@@ -30,6 +31,7 @@ const GroceryUpdateForm: React.FC<GroceryUpdateFormProps> = ({
   onFileChange,
   onSubmit,
   categories = [],
+  isLoading,
 }) => {
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [isAddingNewCategory, setIsAddingNewCategory] = React.useState(false);
@@ -59,40 +61,42 @@ const GroceryUpdateForm: React.FC<GroceryUpdateFormProps> = ({
         <ModalHeader>Update Grocery</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <FormControl mb={4}>
-            <FormLabel>Name</FormLabel>
-            <Input
-              name="name"
-              value={formData.name}
-              onChange={(e) => onInputChange("name", e.target.value)}
-            />
-          </FormControl>
-          <FormControl mb={4}>
-            <FormLabel>Price</FormLabel>
-            <Input
-              name="price"
-              type="number"
-              value={formData.price}
-              onChange={(e) => onInputChange("price", e.target.value)}
-            />
-          </FormControl>
-          <FormControl mb={4}>
-            <FormLabel>Description</FormLabel>
-            <Input
-              name="description"
-              value={formData.description}
-              onChange={(e) => onInputChange("description", e.target.value)}
-            />
-          </FormControl>
-          <FormControl mb={4}>
-            <FormLabel>Amount</FormLabel>
-            <Input
-              name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={(e) => onInputChange("amount", e.target.value)}
-            />
-          </FormControl>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+            <FormControl>
+              <FormLabel>Name</FormLabel>
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={(e) => onInputChange("name", e.target.value)}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Price</FormLabel>
+              <Input
+                name="price"
+                type="number"
+                value={formData.price}
+                onChange={(e) => onInputChange("price", e.target.value)}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Description</FormLabel>
+              <Input
+                name="description"
+                value={formData.description}
+                onChange={(e) => onInputChange("description", e.target.value)}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Amount</FormLabel>
+              <Input
+                name="amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => onInputChange("amount", e.target.value)}
+              />
+            </FormControl>
+          </SimpleGrid>
           <FormControl mb={4}>
             <FormLabel>Add Category</FormLabel>
             <HStack>
@@ -156,10 +160,10 @@ const GroceryUpdateForm: React.FC<GroceryUpdateFormProps> = ({
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="blue" onClick={onSubmit} mr={3}>
+          <Button colorScheme="blue" onClick={onSubmit} mr={3} isLoading={isLoading} spinnerPlacement="start" disabled={isLoading}>
             Done
           </Button>
-          <Button variant="ghost" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
         </ModalFooter>

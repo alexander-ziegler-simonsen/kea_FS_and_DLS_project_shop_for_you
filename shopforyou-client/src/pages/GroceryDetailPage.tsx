@@ -17,6 +17,7 @@ const GroceryDetailPage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUpdateFormVisible, setIsUpdateFormVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUpdateLoading, setIsUpdateLoading] = useState(false);
   // Defensive fallback for categories array (robust for all API shapes)
   let categories: Category[] = [];
   if (Array.isArray(categoriesData)) {
@@ -84,62 +85,46 @@ const GroceryDetailPage = () => {
   };
 
   const handleUpdate = async () => {
+    setIsUpdateLoading(true);
     try {
-      const formDataToSend: {
-        names: { name: string }[];
-        prices: { price: number }[];
-        descriptions: { description: string }[];
-        amounts: { amount: number }[];
-        categories: { name: string }[];
-        images?: { image: string }[];
-      } = {
+      const formDataToSend: any = {
         names: [{ name: formData.name }],
         prices: [{ price: parseFloat(formData.price) }],
         descriptions: [{ description: formData.description }],
         amounts: [{ amount: parseInt(formData.amount, 10) }],
         categories: formData.categoryIds.map((name) => ({ name })),
       };
-
       if (selectedFile) {
         try {
           const imageFormData = new FormData();
           imageFormData.append("image", selectedFile);
-
           const serverResponse = await axios.post(
-            "http://localhost:3005/api/upload-to-imgur", // Server endpoint for Imgur upload
+            "http://localhost:3005/api/upload-to-imgur",
             imageFormData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
+            { headers: { "Content-Type": "multipart/form-data" } }
           );
-
-          const imageUrl = serverResponse.data.link; // Get the Imgur link from the server response
+          const imageUrl = serverResponse.data.link;
           formDataToSend.images = [{ image: imageUrl }];
         } catch (error) {
+          setIsUpdateLoading(false);
           console.error("Failed to upload image to the server:", error);
           alert("Failed to upload image. Please try again.");
           return;
         }
       }
-
       await axios.post(
         `http://localhost:3005/api/groceries/update/${id}`,
         formDataToSend,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
-
       alert("Grocery item updated successfully.");
       setIsUpdateFormVisible(false);
-      window.location.reload(); // Reload to reflect changes
-    } catch (error: any) {
+      window.location.reload();
+    } catch (error) {
       console.error("Failed to update grocery item:", error);
       alert("Failed to update grocery item.");
+    } finally {
+      setIsUpdateLoading(false);
     }
   };
 
@@ -199,6 +184,7 @@ const GroceryDetailPage = () => {
         onFileChange={handleFileChange}
         onSubmit={handleUpdate}
         categories={categories}
+        isLoading={isUpdateLoading}
       />
     </>
   );
