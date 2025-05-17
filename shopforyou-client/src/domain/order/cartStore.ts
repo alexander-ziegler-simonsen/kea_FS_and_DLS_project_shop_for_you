@@ -31,8 +31,6 @@ const useCartStore = create<CartState>((set) => ({
           ),
         };
       }
-      // Log the item and its amount
-      console.log("Adding to cart:", item, "Amount:", item.amount);
       // Only use id, name, price, image, amount from the first add; ignore if later adds have different values
       return { items: [...state.items, { ...item, quantity: 1 }] };
     }),

@@ -26,6 +26,13 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
   const groceryApi = new ApiClient<any>("/api/groceries");
 
   const handleOrder = async () => {
+    // Check for stock before anything else
+    const outOfStockItems = cartItems.filter(item => (item.amount ?? 0) - item.quantity < 0);
+    if (outOfStockItems.length > 0) {
+      const names = outOfStockItems.map(item => item.name).join(", ");
+      alert(`Not enough stock for: ${names}`);
+      return;
+    }
     let username = "";
     let email = "";
     let address = "";
@@ -56,14 +63,6 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
       price: item.price * item.quantity
     }));
     try {
-      // Check for stock before placing order
-      const outOfStockItems = cartItems.filter(item => (item.amount ?? 0) - item.quantity < 0);
-      if (outOfStockItems.length > 0) {
-        const names = outOfStockItems.map(item => item.name).join(", ");
-        alert(`Not enough stock for: ${names}`);
-        setIsSubmitting(false);
-        return;
-      }
       await orderApi.post({
         username: userData.username,
         email: userData.email,
