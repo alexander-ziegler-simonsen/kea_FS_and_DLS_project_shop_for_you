@@ -21,14 +21,17 @@ const useCartStore = create<CartState>((set) => ({
   items: [],
   addToCart: (item) =>
     set((state) => {
+      console.log('addToCart called with id:', item.id, 'type:', typeof item.id);
       const existing = state.items.find((i) => i.id === item.id);
       if (existing) {
+        // Only update quantity, do not overwrite name/price/image
         return {
           items: state.items.map((i) =>
             i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
           ),
         };
       }
+      // Only use id, name, price, image from the first add; ignore if later adds have different values
       return { items: [...state.items, { ...item, quantity: 1 }] };
     }),
   removeFromCart: (id) =>

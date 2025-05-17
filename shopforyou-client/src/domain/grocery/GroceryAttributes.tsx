@@ -12,7 +12,7 @@ const GroceryAttributes = ({ grocery }: Props) => {
 
   // Get the current quantity of this grocery in the cart
   const cartQuantity = useCartStore((state) => {
-    const item = state.items.find((i) => i.id === grocery.id);
+    const item = state.items.find((i) => i.id === String(grocery.id));
     return item ? item.quantity : 0;
   });
   const addToCart = useCartStore((state) => state.addToCart);
@@ -26,22 +26,23 @@ const GroceryAttributes = ({ grocery }: Props) => {
       e.preventDefault();
     }
     addToCart({
-      id: grocery.id,
+      id: String(grocery.id),
       name: grocery.names[0]?.name || "",
       price: grocery.prices[0]?.price || 0,
       image: grocery.images[0]?.image || "",
+      amount: grocery.amounts[0]?.amount ?? 0, // Pass amount to cart
     });
   };
 
   const handleIncrement = () => {
-    increaseQuantity(grocery.id);
+    increaseQuantity(String(grocery.id));
   };
 
   const handleDecrement = () => {
     if (cartQuantity > 1) {
-      decreaseQuantity(grocery.id);
+      decreaseQuantity(String(grocery.id));
     } else if (cartQuantity === 1) {
-      removeFromCart(grocery.id);
+      removeFromCart(String(grocery.id));
     }
   };
 
@@ -85,7 +86,7 @@ const GroceryAttributes = ({ grocery }: Props) => {
               <Button onClick={handleDecrement} borderRadius="full" bg="gray.300" minW={12} minH={12} fontSize="2xl" color="black" _hover={{ bg: 'gray.400' }}>-</Button>
               <Text color="white" fontSize="2xl" fontWeight="bold">{cartQuantity}</Text>
               <Button onClick={handleIncrement} borderRadius="full" bg="gray.300" minW={12} minH={12} fontSize="2xl" color="black" _hover={{ bg: 'gray.400' }}>+</Button>
-              <Button variant="ghost" colorScheme="red" fontSize="2xl" ml={2} onClick={() => removeFromCart(grocery.id)}>
+              <Button variant="ghost" colorScheme="red" fontSize="2xl" ml={2} onClick={() => removeFromCart(String(grocery.id))}>
                 &#10005;
               </Button>
             </Flex>
