@@ -3,8 +3,8 @@ import { Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerC
 import { ReactNode, forwardRef, useImperativeHandle, useRef, useState } from "react";
 import useCartStore from "./cartStore";
 import { jwtDecode } from "jwt-decode";
-import { Button as ChakraButton } from "@chakra-ui/react";
 import OrderDetails from "./OrderDetails";
+import OrderApiClient from "../../services/order-api-client";
 import ApiClient from "../../services/grocery-api-client";
 
 export interface OrderDrawerHandle {
@@ -21,8 +21,8 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
   const [form, setForm] = useState({ username: "", email: "", address: "" });
   const { isOpen: isModalOpen, onOpen: openModal, onClose: closeModal } = useDisclosure();
 
-  // Create ApiClient instances (both use default baseURL, which is 3005)
-  const orderApi = new ApiClient<any>("/orders");
+  // Create ApiClient instances
+  const orderApi = new OrderApiClient("/orders");
   const groceryApi = new ApiClient<any>("/api/groceries");
 
   const handleOrder = async () => {
@@ -56,16 +56,20 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
       price: item.price * item.quantity
     }));
     try {
-      await fetch("http://localhost:3007/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: userData.username,
-          email: userData.email,
-          address: userData.address,
-          totalprice,
-          orderlines
-        })
+      // Check for stock before placing order
+      const outOfStockItems = cartItems.filter(item => (item.amount ?? 0) - item.quantity < 0);
+      if (outOfStockItems.length > 0) {
+        const names = outOfStockItems.map(item => item.name).join(", ");
+        alert(`Not enough stock for: ${names}`);
+        setIsSubmitting(false);
+        return;
+      }
+      await orderApi.post({
+        username: userData.username,
+        email: userData.email,
+        address: userData.address,
+        totalprice,
+        orderlines
       });
       // Update grocery amounts in backend using ApiClient
       await Promise.all(cartItems.map(async (item) => {
