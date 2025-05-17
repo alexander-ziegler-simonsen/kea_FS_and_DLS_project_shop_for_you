@@ -163,7 +163,7 @@ services:
       context: ./shopforyou-client
       dockerfile: Dockerfile
     environment:
-      VITE_API_URL: http://localhost:3005
+      VITE_GROCERY_HANDLER_URL: ${GROCERY_HANDLER_URL}
       CHOKIDAR_USEPOLLING: true
     ports:
       - "8080:8080"

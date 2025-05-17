@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import GroceryForm from '../forms/GroceryForm';
 import { Box, Spinner } from "@chakra-ui/react";
+import ApiClient from '../services/api-client';
 
 interface Category {
   id: number;
@@ -21,6 +21,10 @@ const NewGroceryPage = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<any>(null);
+
+  const categoryApi = new ApiClient<any>('/api/categories');
+  const groceryApi = new ApiClient<any>('/api/groceries');
+  const uploadApi = new ApiClient<any>('/api');
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
@@ -46,8 +50,12 @@ const NewGroceryPage = () => {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:3005/api/categories');
-      setCategories(response.data.categories);
+      const response = await categoryApi.getAll();
+      setCategories(
+        Array.isArray(response)
+          ? response
+          : response.categories || response.results || []
+      );
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -72,16 +80,8 @@ const NewGroceryPage = () => {
       try {
         const imageFormData = new FormData();
         imageFormData.append("image", values.image);
-        const serverResponse = await axios.post(
-          "http://localhost:3005/api/upload-to-imgur",
-          imageFormData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        imageUrl = serverResponse.data.link;
+        const serverResponse = await uploadApi.uploadFormData("/upload-to-imgur", imageFormData);
+        imageUrl = serverResponse.link;
       } catch (error) {
         setIsLoading(false);
         setIsError(true);
@@ -101,15 +101,7 @@ const NewGroceryPage = () => {
     };
 
     try {
-      await axios.post(
-        'http://localhost:3005/api/groceries',
-        groceryData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      await groceryApi.post(groceryData);
       setIsSuccess(true);
       setIsLoading(false);
       setTimeout(() => navigate('/'), 1000);

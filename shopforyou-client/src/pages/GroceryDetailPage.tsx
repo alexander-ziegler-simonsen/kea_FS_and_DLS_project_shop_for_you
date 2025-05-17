@@ -8,6 +8,10 @@ import axios from "axios";
 import GroceryUpdateForm from "../forms/GroceryUpdateForm";
 import useCategories from "../domain/category/useCategories";
 import type { Category } from "../domain/category/Category";
+import ApiClient from "../services/api-client";
+
+const groceryApi = new ApiClient<any>("/api/groceries");
+const uploadApi = new ApiClient<any>("/api");
 
 const GroceryDetailPage = () => {
   const { id } = useParams();
@@ -55,8 +59,7 @@ const GroceryDetailPage = () => {
     if (isUpdateFormVisible && id) {
       const fetchGroceryData = async () => {
         try {
-          const response = await axios.get(`http://localhost:3005/api/groceries/${id}`);
-          const groceryData = response.data;
+          const groceryData = await groceryApi.get(id);
           setFormData({
             name: groceryData.names[0]?.name || "",
             price: String(groceryData.prices[0]?.price || ""),
@@ -68,7 +71,6 @@ const GroceryDetailPage = () => {
           console.error("Failed to fetch grocery data:", error);
         }
       };
-
       fetchGroceryData();
     }
   }, [isUpdateFormVisible, id]);
@@ -98,12 +100,8 @@ const GroceryDetailPage = () => {
         try {
           const imageFormData = new FormData();
           imageFormData.append("image", selectedFile);
-          const serverResponse = await axios.post(
-            "http://localhost:3005/api/upload-to-imgur",
-            imageFormData,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          );
-          const imageUrl = serverResponse.data.link;
+          const serverResponse = await uploadApi.uploadFormData("/upload-to-imgur", imageFormData);
+          const imageUrl = serverResponse.link;
           formDataToSend.images = [{ image: imageUrl }];
         } catch (error) {
           setIsUpdateLoading(false);
@@ -112,11 +110,8 @@ const GroceryDetailPage = () => {
           return;
         }
       }
-      await axios.post(
-        `http://localhost:3005/api/groceries/update/${id}`,
-        formDataToSend,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      if (!id) throw new Error("No grocery ID provided");
+      await groceryApi.update(id, formDataToSend);
       alert("Grocery item updated successfully.");
       setIsUpdateFormVisible(false);
       window.location.reload();
@@ -137,7 +132,7 @@ const GroceryDetailPage = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:3005/api/groceries/${id}`);
+      await groceryApi.delete(id);
       alert("Grocery item deleted successfully.");
       navigate("/", { replace: true }); // Redirect to homepage
       window.location.reload(); // Trigger a reload

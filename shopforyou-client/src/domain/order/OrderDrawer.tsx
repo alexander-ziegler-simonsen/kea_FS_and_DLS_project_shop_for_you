@@ -5,6 +5,7 @@ import useCartStore from "./cartStore";
 import { jwtDecode } from "jwt-decode";
 import { Button as ChakraButton } from "@chakra-ui/react";
 import OrderDetails from "./OrderDetails";
+import ApiClient from "../../services/api-client";
 
 export interface OrderDrawerHandle {
   open: () => void;
@@ -19,6 +20,10 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ username: "", email: "", address: "" });
   const { isOpen: isModalOpen, onOpen: openModal, onClose: closeModal } = useDisclosure();
+
+  // Create ApiClient instances (both use default baseURL, which is 3005)
+  const orderApi = new ApiClient<any>("/orders");
+  const groceryApi = new ApiClient<any>("/api/groceries");
 
   const handleOrder = async () => {
     let username = "";
@@ -62,22 +67,17 @@ const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((pro
           orderlines
         })
       });
-      // Update grocery amounts in backend
+      // Update grocery amounts in backend using ApiClient
       await Promise.all(cartItems.map(async (item) => {
-        // Calculate new amount (never below 0)
         const newAmount = Math.max(0, (item.amount ?? 0) - item.quantity);
-        await fetch(`http://localhost:3005/api/groceries/update/${item.id}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amounts: [{ amount: newAmount }]
-          })
+        await groceryApi.update(item.id, {
+          amounts: [{ amount: newAmount }]
         });
       }));
       useCartStore.getState().clearCart();
       closeModal();
       onClose();
-      window.location.reload(); // Reload the page after successful order
+      window.location.reload();
     } catch (e) {
       alert("Order failed. Please try again.");
     } finally {

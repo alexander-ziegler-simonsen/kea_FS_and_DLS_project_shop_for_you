@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb';
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
-async function connectRabbit(retries = 8) {
+async function connectRabbit(retries = 15) {
   const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
 
   for (let i = 0; i < retries; i++) {
