@@ -19,7 +19,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ isOpen, onClose, isSubmitti
       <form onSubmit={onSubmit}>
         <ModalBody>
           <FormControl isRequired mb={2}>
-            <FormLabel>Username</FormLabel>
+            <FormLabel>Name</FormLabel>
             <Input value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
           </FormControl>
           <FormControl isRequired mb={2}>

@@ -71,7 +71,7 @@ const NavBar = () => {
       <ColorModeSwitch />
 
       <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} onLoginSuccess={handleLoginSuccess} />
-      <RegisterModal isOpen={isRegisterOpen} onClose={closeRegisterModal} />
+      <RegisterModal isOpen={isRegisterOpen} onClose={closeRegisterModal} onLoginSuccess={handleLoginSuccess} />
     </HStack>
   );
 };

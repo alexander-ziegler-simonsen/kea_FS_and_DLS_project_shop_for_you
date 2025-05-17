@@ -87,7 +87,7 @@ export const LoginModal = ({ isOpen, onClose, onLoginSuccess }: { isOpen: boolea
   );
 };
 
-export const RegisterModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+export const RegisterModal = ({ isOpen, onClose, onLoginSuccess }: { isOpen: boolean; onClose: () => void; onLoginSuccess?: () => void }) => {
   if (!isOpen) return null; // Prevent rendering if the modal is not open
 
   const [formData, setFormData] = useState({
@@ -119,6 +119,9 @@ export const RegisterModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
         duration: 3000,
         isClosable: true,
       });
+      if (typeof onLoginSuccess === "function") {
+        onLoginSuccess(); // Trigger page reload after registration and login
+      }
       onClose();
     } catch (error: any) {
       toast({
