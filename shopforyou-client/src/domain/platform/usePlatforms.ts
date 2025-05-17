@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import ApiClient, { Response } from "../../services/api-client";
+import ApiClient, { Response } from "../../services/grocery-api-client";
 import platforms from "./platforms";
 import ms from "ms";
 import { Platform } from "./Platform";

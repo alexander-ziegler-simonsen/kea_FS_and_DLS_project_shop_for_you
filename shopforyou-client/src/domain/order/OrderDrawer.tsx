@@ -5,7 +5,7 @@ import useCartStore from "./cartStore";
 import { jwtDecode } from "jwt-decode";
 import { Button as ChakraButton } from "@chakra-ui/react";
 import OrderDetails from "./OrderDetails";
-import ApiClient from "../../services/api-client";
+import ApiClient from "../../services/grocery-api-client";
 
 export interface OrderDrawerHandle {
   open: () => void;

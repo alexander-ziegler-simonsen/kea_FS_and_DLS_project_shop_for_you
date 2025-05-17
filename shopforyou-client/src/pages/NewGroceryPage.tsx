@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import GroceryForm from '../forms/GroceryForm';
 import { Box, Spinner } from "@chakra-ui/react";
-import ApiClient from '../services/api-client';
+import ApiClient from '../services/grocery-api-client';
 
 interface Category {
   id: number;

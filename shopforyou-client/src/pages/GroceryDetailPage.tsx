@@ -8,7 +8,7 @@ import axios from "axios";
 import GroceryUpdateForm from "../forms/GroceryUpdateForm";
 import useCategories from "../domain/category/useCategories";
 import type { Category } from "../domain/category/Category";
-import ApiClient from "../services/api-client";
+import ApiClient from "../services/grocery-api-client";
 
 const groceryApi = new ApiClient<any>("/api/groceries");
 const uploadApi = new ApiClient<any>("/api");

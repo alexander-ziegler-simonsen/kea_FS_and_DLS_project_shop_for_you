@@ -1,4 +1,4 @@
-import ApiClient from "../../services/api-client";
+import ApiClient from "../../services/grocery-api-client";
 import { useQuery } from "@tanstack/react-query";
 import { Grocery } from "./Grocery";
 

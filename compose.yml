@@ -164,6 +164,8 @@ services:
       dockerfile: Dockerfile
     environment:
       VITE_GROCERY_HANDLER_URL: ${GROCERY_HANDLER_URL}
+      VITE_ORDER_HANDLER_URL: ${ORDER_HANDLER_URL}
+      VITE_USER_HANDLER_URL: ${USER_HANDLER_URL}
       CHOKIDAR_USEPOLLING: true
     ports:
       - "8080:8080"
