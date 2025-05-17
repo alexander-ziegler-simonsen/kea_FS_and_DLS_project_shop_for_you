@@ -25,13 +25,14 @@ const GroceryCard = ({ grocery }: Props) => {
       e.stopPropagation();
       e.preventDefault();
     }
-    addToCart({
+    const item = {
       id: String(grocery.id),
       name: grocery.name || "",
       price: grocery.price ?? 0,
       image: grocery.image || "",
-      amount: grocery.amounts?.[0]?.amount ?? 0, // Pass amount to cart
-    });
+      amount: grocery.amounts?.[0]?.amount ?? 0, // Pass correct amount to cart
+    };
+    addToCart(item);
   };
 
   return (
