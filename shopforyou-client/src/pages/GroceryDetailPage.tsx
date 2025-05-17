@@ -1,4 +1,4 @@
-import { Heading, Spinner, Button, Flex } from "@chakra-ui/react";
+import { Spinner, Button, Flex } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
@@ -173,7 +173,7 @@ const GroceryDetailPage = () => {
   return (
     <>
       <Flex justifyContent="space-between" alignItems="center" mb={4}>
-        <Heading>{grocery.names.map(name => name.name).join(", ")}</Heading>
+        {/* Removed Heading with grocery name */}
         {isAdmin && (
           <Flex>
             <Button
@@ -189,11 +189,7 @@ const GroceryDetailPage = () => {
           </Flex>
         )}
       </Flex>
-      <img
-        src={grocery.images[0]?.image || ""}
-        alt={grocery.names[0]?.name || "Grocery Image"}
-        style={{ maxWidth: "20%", borderRadius: "8px", marginBottom: "16px" }}
-      />
+      {/* Removed image here */}
       <GroceryAttributes grocery={grocery} />
       <GroceryUpdateForm
         isOpen={isUpdateFormVisible}

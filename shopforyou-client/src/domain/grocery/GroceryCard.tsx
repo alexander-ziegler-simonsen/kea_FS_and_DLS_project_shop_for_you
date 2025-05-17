@@ -48,7 +48,7 @@ const GroceryCard = ({ grocery }: Props) => {
         <Heading fontSize="2xl">{grocery.name}</Heading>
         <HStack justifyContent="space-between" mt={4}>
           <Button colorScheme="teal" size="sm" onClick={handleAddToCart}>
-            Add
+            Add to cart
           </Button>
           <Text color="green.500" fontWeight="bold">${grocery.price.toFixed(2)}</Text>
         </HStack>
