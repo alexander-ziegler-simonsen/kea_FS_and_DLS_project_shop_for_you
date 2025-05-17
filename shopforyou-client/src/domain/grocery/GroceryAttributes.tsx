@@ -1,7 +1,6 @@
 import { Box, Flex, SimpleGrid, Text, Badge, Button, Divider, Stack, Heading } from "@chakra-ui/react";
 import { Grocery } from "./Grocery";
 import useCartStore from "../order/cartStore";
-import { useState } from "react";
 
 interface Props {
   grocery: Grocery;
@@ -10,15 +9,6 @@ interface Props {
 const GroceryAttributes = ({ grocery }: Props) => {
   const price = grocery.prices[0]?.price;
   const isPremium = grocery.categories.some(cat => cat.name.toLowerCase().includes("premium"));
-
-  // Example: try to extract brand, type, etc. from categories or add more fields to Grocery if available
-  const brand = grocery.categories.find(cat => cat.name.toLowerCase().includes("brand"))?.name || "";
-  const type = grocery.categories.find(cat => cat.name.toLowerCase().includes("type"))?.name || "";
-  const cut = grocery.categories.find(cat => cat.name.toLowerCase().includes("udskæring"))?.name || "";
-  const animalType = grocery.categories.find(cat => cat.name.toLowerCase().includes("kylling"))?.name || "";
-
-  // Nutrition info: try to extract from grocery.nutrition if available, else fallback to empty
-  const nutrition = grocery.nutrition || [];
 
   // Get the current quantity of this grocery in the cart
   const cartQuantity = useCartStore((state) => {
