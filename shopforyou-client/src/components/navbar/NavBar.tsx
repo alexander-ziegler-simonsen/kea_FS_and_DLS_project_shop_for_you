@@ -5,7 +5,8 @@ import { jwtDecode } from "jwt-decode";
 import logo from "../../assets/logo.webp";
 import ColorModeSwitch from "./ColorModeSwitch";
 import SearchInput from "./SearchInput";
-import { LoginModal, RegisterModal } from "./LoginModals";
+import { LoginModal } from "./LoginModals";
+import { RegisterModal } from "./RegisterModal";
 
 const NavBar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
