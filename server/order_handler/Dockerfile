@@ -1,26 +1,26 @@
-# Use Node.js LTS version
 FROM node:18
 
-# Set the working directory
 WORKDIR /app
 
-# Copy only the order_handler package.json and package-lock.json
-COPY ./package.json ./
-COPY ./package-lock.json ./
-
 # Install dependencies
+COPY package*.json tsconfig.json ./
 RUN npm install
 
-# Copy the entire order_handler directory
+# Install TypeScript globally
+RUN npm install -g typescript
+
+# Install ts-node
+RUN npm install ts-node
+
+# Copy remaining app files
 COPY . .
 
-# Compile TypeScript to JavaScript
-RUN npx tsc
+# Compile TypeScript files
+RUN tsc
 
-# Expose the port the app runs on
 EXPOSE 3007
 
-# Start the server
+# Run the compiled JavaScript file
 CMD ["node", "dist/server.js"]
 
 

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sfy-seeder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sfy-seeder
+  template:
+    metadata:
+      labels:
+        app: sfy-seeder
+    spec:
+      containers:
+      - name: seeder
+        image: jeffreyoechsner/sfy-seeder:latest
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+        volumeMounts:
+        - name: seeder-volume
+          mountPath: /app
+      volumes:
+      - name: seeder-volume
+        emptyDir: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfy-seeder
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: sfy-seeder

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopforyou-config
+  namespace: default
+data:
+  MON_USERNAME: "root"
+  MON_PASSWORD: "password"
+  MON_HOST: "sfu-mongodb"
+  MON_PORT: "27017"
+  MON_DB: "mirror"
+  POST_USERNAME: "root"
+  POST_PASSWORD: "password"
+  POST_DB: "postgres"
+  POST_HOST: "localhost"
+  POST_PORT: "5432"
+  POST_DATABASE_URL: "postgres://root:password@sfu-postgres:5432/postgres"
+  RABBIT_USERNAME: "root"
+  RABBIT_PASSWORD: "password"
+  RABBIT_HOST: "sfu-rabbitmq"
+  RABBIT_PORT: "5672"
+  PGADMIN_EMAIL: "admin@example.com"
+  PGADMIN_PASSWORD: "admin"
+  IMGUR_CLIENT_ID: "ee971679c021eb4"
+  JWT_SECRET: "9d5a7466d8e212980c3fd60c2178c1b45dff75cd"

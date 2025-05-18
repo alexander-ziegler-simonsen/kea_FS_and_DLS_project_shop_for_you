@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sfu-pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sfu-pgadmin
+  template:
+    metadata:
+      labels:
+        app: sfu-pgadmin
+    spec:
+      containers:
+      - name: pgadmin
+        image: dpage/pgadmin4
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+        volumeMounts:
+        - name: pgadmindata
+          mountPath: /var/lib/pgadmin
+      volumes:
+      - name: pgadmindata
+        persistentVolumeClaim:
+          claimName: pgadmindata-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfu-pgadmin
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: sfu-pgadmin

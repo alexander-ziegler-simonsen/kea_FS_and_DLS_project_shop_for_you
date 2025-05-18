@@ -11,7 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "strictPropertyInitialization": false,
-    "types": ["node"]
+    "types": ["node"],
+    "outDir": "./dist"
   },
   "ts-node": {
     "esm": true

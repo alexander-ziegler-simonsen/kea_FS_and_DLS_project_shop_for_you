@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sfu-rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sfu-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: sfu-rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:management
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+        volumeMounts:
+        - name: rabbitmqdata
+          mountPath: /var/lib/rabbitmq
+      volumes:
+      - name: rabbitmqdata
+        persistentVolumeClaim:
+          claimName: rabbitmqdata-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfu-rabbitmq
+spec:
+  type: ClusterIP
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+  selector:
+    app: sfu-rabbitmq

@@ -6,18 +6,15 @@ WORKDIR /app
 COPY package*.json tsconfig.json ./
 RUN npm install
 
-# Install TypeScript globally
-RUN npm install -g typescript
-
 # Copy remaining app files
 COPY . .
 
-# Compile TypeScript files
-RUN tsc
+# Build TypeScript
+RUN npx tsc
 
 EXPOSE 3005
 
-# Run the compiled JavaScript file
+# Run the app
 CMD ["node", "dist/server.js"]
 
 

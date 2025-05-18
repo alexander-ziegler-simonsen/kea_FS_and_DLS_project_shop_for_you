@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopforyou-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopforyou-client
+  template:
+    metadata:
+      labels:
+        app: shopforyou-client
+    spec:
+      containers:
+      - name: shopforyou-client
+        image: jeffreyoechsner/shopforyou-client:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: VITE_API_URL
+          value: "http://localhost:3005"
+        - name: CHOKIDAR_USEPOLLING
+          value: "true"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopforyou-client
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: shopforyou-client
