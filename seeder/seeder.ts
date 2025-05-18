@@ -217,8 +217,17 @@ async function insertGroceries() {
   }
 }
 
+// Check for lock file before running seeder
+const LOCK_FILE = "seeder.lock";
+if (fs.existsSync(LOCK_FILE)) {
+  console.log("Seeder has already been run. Exiting.");
+  process.exit(0);
+}
+
 async function main() {
   await insertGroceries();
+  // Create lock file after successful seeding
+  fs.writeFileSync(LOCK_FILE, `Seeded at ${new Date().toISOString()}`);
 }
 
 main().catch((error) => {

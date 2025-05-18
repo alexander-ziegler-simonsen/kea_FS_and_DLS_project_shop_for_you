@@ -23,7 +23,14 @@ spec:
         volumeMounts:
         - name: pgadmindata
           mountPath: /var/lib/pgadmin
+        - name: pgadmin-servers
+          mountPath: /pgadmin4/servers.json
+          subPath: servers.json
+          readOnly: true
       volumes:
       - name: pgadmindata
         persistentVolumeClaim:
           claimName: pgadmindata
+      - name: pgadmin-servers
+        configMap:
+          name: pgadmin-servers

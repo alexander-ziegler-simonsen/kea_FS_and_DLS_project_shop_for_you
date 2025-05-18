@@ -15,6 +15,11 @@ spec:
       containers:
       - name: pgadmin
         image: dpage/pgadmin4
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo 'pgAdmin available at: http://localhost:30080'
+            /entrypoint.sh
         ports:
         - containerPort: 80
         envFrom:
@@ -33,9 +38,10 @@ kind: Service
 metadata:
   name: sfu-pgadmin
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 80
       targetPort: 80
+      nodePort: 30080 # Access pgAdmin at: http://localhost:30080
   selector:
     app: sfu-pgadmin
