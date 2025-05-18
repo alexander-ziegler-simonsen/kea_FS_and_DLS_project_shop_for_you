@@ -45,6 +45,7 @@ const GroceryGrid = () => {
                     image: grocery.images?.[0]?.image || "",
                     category: grocery.categories?.[0]?.name || "Uncategorized",
                     price: grocery.prices?.[0]?.price || 0,
+                    amounts: grocery.amounts,
                   };
                   return (
                     <GroceryCardContainer key={grocery.id}>

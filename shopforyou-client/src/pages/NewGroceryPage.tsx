@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
+import GroceryForm from '../forms/GroceryForm';
+import { Box, Spinner } from "@chakra-ui/react";
+import ApiClient from '../services/grocery-api-client';
 
 interface Category {
   id: number;
@@ -15,15 +17,14 @@ interface DecodedToken {
 const NewGroceryPage = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [formData, setFormData] = useState({
-    name: '',
-    image: null as File | null,
-    categoryId: '',
-    price: '',
-    description: '',
-    amount: '',
-  });
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<any>(null);
+
+  const categoryApi = new ApiClient<any>('/api/categories');
+  const groceryApi = new ApiClient<any>('/api/groceries');
+  const uploadApi = new ApiClient<any>('/api');
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
@@ -47,10 +48,19 @@ const NewGroceryPage = () => {
   }, [navigate]);
 
   const fetchCategories = async () => {
+    setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:3005/api/categories');
-      setCategories(response.data.categories);
+      const response = await categoryApi.getAll();
+      setCategories(
+        Array.isArray(response)
+          ? response
+          : response.categories || response.results || []
+      );
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
+      setIsError(true);
+      setError(error);
       console.error('Failed to fetch categories:', error);
     }
   };
@@ -59,97 +69,76 @@ const NewGroceryPage = () => {
     fetchCategories();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const handleSubmit = async (values: any) => {
+    setIsLoading(true);
+    setIsError(false);
+    setIsSuccess(false);
+    setError(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, image: e.target.files ? e.target.files[0] : null });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const data = new FormData();
-    data.append('name', formData.name);
-    if (formData.image) {
-      data.append('image', formData.image);
+    let imageUrl = "";
+    if (values.image) {
+      try {
+        const imageFormData = new FormData();
+        imageFormData.append("image", values.image);
+        const serverResponse = await uploadApi.uploadFormData("/upload-to-imgur", imageFormData);
+        imageUrl = serverResponse.link;
+      } catch (error) {
+        setIsLoading(false);
+        setIsError(true);
+        setError(error);
+        alert("Failed to upload image. Please try again.");
+        return;
+      }
     }
-    data.append('type', formData.categoryId);
-    data.append('price', formData.price);
-    data.append('description', formData.description);
-    data.append('amount', formData.amount);
+
+    const groceryData = {
+      name: values.name,
+      type: values.categoryIds, // now an array
+      price: values.price,
+      description: values.description,
+      amount: values.amount,
+      image: imageUrl,
+    };
 
     try {
-      await axios.post('http://localhost:3005/api/groceries', data);
-      alert('Grocery added successfully!');
-      navigate('/'); // Redirect to the main page
+      await groceryApi.post(groceryData);
+      setIsSuccess(true);
+      setIsLoading(false);
+      setTimeout(() => navigate('/'), 1000);
     } catch (error) {
+      setIsError(true);
+      setIsLoading(false);
+      setError(error);
       console.error('Failed to add grocery:', error);
-      alert('Failed to add grocery.');
     }
   };
 
   return (
-    <div>
-      <h1>Add New Grocery</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Image:</label>
-          <input type="file" name="image" onChange={handleFileChange} required />
-        </div>
-        <div>
-          <label>Category:</label>
-          {isAddingCategory ? (
-            <input
-              type="text"
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleInputChange}
-              placeholder="Enter new category"
-              required
-            />
-          ) : (
-            <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={(e) => {
-                if (e.target.value === 'add-new') {
-                  setIsAddingCategory(true);
-                  setFormData({ ...formData, categoryId: '' });
-                } else {
-                  setFormData({ ...formData, categoryId: e.target.value });
-                }
-              }}
-              required
-            >
-              <option value="">Select a category</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.name}>{category.name}</option>
-              ))}
-              <option value="add-new">Add New Category</option>
-            </select>
-          )}
-        </div>
-        <div>
-          <label>Price:</label>
-          <input type="number" name="price" value={formData.price} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Description:</label>
-          <textarea name="description" value={formData.description} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Amount:</label>
-          <input type="number" name="amount" value={formData.amount} onChange={handleInputChange} required />
-        </div>
-        <button type="submit">Add Grocery</button>
-      </form>
-    </div>
+    <Box>
+      {isLoading && categories.length === 0 ? (
+        <Spinner size="xl" />
+      ) : (
+        <GroceryForm
+          initialValues={{
+            name: '',
+            image: null,
+            categoryIds: [], // changed from categoryId: ''
+            price: '',
+            description: '',
+            amount: '',
+          }}
+          categories={categories}
+          isLoading={isLoading}
+          isSuccess={isSuccess}
+          isError={isError}
+          error={error}
+          onSubmit={handleSubmit}
+          buttonLabel="Add Grocery"
+          heading="Add New Grocery"
+          successMessage="Grocery added successfully!"
+        />
+      )}
+    </Box>
   );
 };
 

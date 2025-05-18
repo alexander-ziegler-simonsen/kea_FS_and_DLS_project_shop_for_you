@@ -1,6 +1,8 @@
-import axios from "axios";
+import UserApiClient from "./user-api-client";
 
-const API_URL = "http://localhost:3006/api/users/register";
+const API_URL = "/api/users/register";
+
+const userApiClient = new UserApiClient(API_URL);
 
 export const registerUser = async (userData: {
   email: string;
@@ -10,8 +12,7 @@ export const registerUser = async (userData: {
   role?: string; // Added optional role property
 }) => {
   try {
-    const response = await axios.post(API_URL, userData);
-    return response.data; // Return the registered user data
+    return await userApiClient.post(userData);
   } catch (error: any) {
     throw new Error(error.response?.data?.error || "Registration failed");
   }

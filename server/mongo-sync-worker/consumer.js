@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb';
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
-async function connectRabbit(retries = 8) {
+async function connectRabbit(retries = 15) {
   const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
 
   for (let i = 0; i < retries; i++) {
@@ -93,20 +93,58 @@ async function startConsumer() {
     }
   });
 
-  // Consumer for updated groceries
-  channel.consume('grocery-queue-updated', async (msg) => {
+// Consumer for updated groceries
+channel.consume('grocery-queue-updated', async (msg) => {
     if (msg) {
-      try {
-        const grocery = JSON.parse(msg.content.toString());
-        await groceries.replaceOne({ id: grocery.id }, grocery, { upsert: true });
-        console.log(`✏️ Updated grocery: ${grocery.id}`);
-        channel.ack(msg);
-      } catch (error) {
-        console.error('❌ Failed to update grocery in Mongo:', error.message);
-        channel.ack(msg);
-      }
+        try {
+            const grocery = JSON.parse(msg.content.toString());
+
+            // Process the grocery object to only keep the latest name
+            if (grocery.names && Array.isArray(grocery.names)) {
+                grocery.names = [grocery.names.reduce((latest, current) =>
+                    new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+                )];
+            }
+
+            // Process the grocery object to only keep the latest image
+            if (grocery.images && Array.isArray(grocery.images)) {
+                grocery.images = [grocery.images.reduce((latest, current) =>
+                    new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+                )];
+            }
+
+            // Do NOT reduce categories, keep all
+
+            // Process the grocery object to only keep the latest price
+            if (grocery.prices && Array.isArray(grocery.prices)) {
+                grocery.prices = [grocery.prices.reduce((latest, current) =>
+                    new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+                )];
+            }
+
+            // Process the grocery object to only keep the latest description
+            if (grocery.descriptions && Array.isArray(grocery.descriptions)) {
+                grocery.descriptions = [grocery.descriptions.reduce((latest, current) =>
+                    new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+                )];
+            }
+
+            // Process the grocery object to only keep the latest amount
+            if (grocery.amounts && Array.isArray(grocery.amounts)) {
+                grocery.amounts = [grocery.amounts.reduce((latest, current) =>
+                    new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+                )];
+            }
+
+            await groceries.replaceOne({ id: grocery.id }, grocery, { upsert: true });
+            console.log(`✏️ Updated grocery: ${grocery.id}`);
+            channel.ack(msg);
+        } catch (error) {
+            console.error('❌ Failed to update grocery in Mongo:', error.message);
+            channel.ack(msg);
+        }
     }
-  });
+});
 
   console.log('🚀 Mongo sync worker is now listening for grocery.created, grocery.deleted, and grocery.updated messages...');
 }

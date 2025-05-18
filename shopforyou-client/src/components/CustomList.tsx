@@ -8,7 +8,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { UseQueryResult } from "@tanstack/react-query";
-import { Response } from "../services/api-client";
+import { Response } from "../services/grocery-api-client";
 
 interface Props<T extends Item> {
   title: string;

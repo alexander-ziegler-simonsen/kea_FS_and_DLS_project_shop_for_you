@@ -5,7 +5,8 @@ import { jwtDecode } from "jwt-decode";
 import logo from "../../assets/logo.webp";
 import ColorModeSwitch from "./ColorModeSwitch";
 import SearchInput from "./SearchInput";
-import { LoginModal, RegisterModal } from "./LoginModals";
+import { LoginModal } from "./LoginModals";
+import { RegisterModal } from "./RegisterModal";
 
 const NavBar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -71,7 +72,7 @@ const NavBar = () => {
       <ColorModeSwitch />
 
       <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} onLoginSuccess={handleLoginSuccess} />
-      <RegisterModal isOpen={isRegisterOpen} onClose={closeRegisterModal} />
+      <RegisterModal isOpen={isRegisterOpen} onClose={closeRegisterModal} onLoginSuccess={handleLoginSuccess} />
     </HStack>
   );
 };

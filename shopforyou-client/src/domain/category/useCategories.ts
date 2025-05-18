@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import ms from "ms";
-import ApiClient from "../../services/api-client";
+import ApiClient from "../../services/grocery-api-client";
 import { Category } from "./Category";
 import categories from "./categories";
 
