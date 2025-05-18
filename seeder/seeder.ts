@@ -88,7 +88,16 @@ async function insertGroceries() {
   const descriptionRepo = AppDataSource.getRepository(Description);
   const amountRepo = AppDataSource.getRepository(Amount);
 
+  await AppDataSource.query('DELETE FROM grocery_descriptions_description');
+  await AppDataSource.query('DELETE FROM grocery_categories_category'); 
+  await AppDataSource.query('DELETE FROM grocery_amounts_amount'); 
+  await AppDataSource.query('DELETE FROM grocery_prices_price');
+  await AppDataSource.query('DELETE FROM grocery_images_grocery_image');
+  await AppDataSource.query('DELETE FROM grocery_names_grocery_name');
+
+  
   // Clean up old data
+  await AppDataSource.query('DELETE FROM grocery_descriptions_description');
   await descriptionRepo.delete({});
   await priceRepo.delete({});
   await categoryRepo.delete({});
@@ -96,6 +105,7 @@ async function insertGroceries() {
   await groceryNameRepo.delete({});
   await groceryRepo.delete({});
   await amountRepo.delete({});
+ 
 
   console.log("✅ All previous data deleted");
 

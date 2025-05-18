@@ -27,7 +27,7 @@ spec:
       volumes:
       - name: rabbitmqdata
         persistentVolumeClaim:
-          claimName: rabbitmqdata-pvc
+          claimName: rabbitmqdata
 ---
 apiVersion: v1
 kind: Service

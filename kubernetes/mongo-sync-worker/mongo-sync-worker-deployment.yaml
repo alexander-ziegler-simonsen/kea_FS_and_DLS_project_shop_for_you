@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-sync-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-sync-worker
+  template:
+    metadata:
+      labels:
+        app: mongo-sync-worker
+    spec:
+      containers:
+      - name: mongo-sync-worker
+        image: jeffreyoechsner/mongo-sync-worker:latest
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+      restartPolicy: Always

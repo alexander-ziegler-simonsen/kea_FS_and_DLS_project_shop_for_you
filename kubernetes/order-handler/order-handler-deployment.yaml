@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-handler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-handler
+  template:
+    metadata:
+      labels:
+        app: order-handler
+    spec:
+      containers:
+      - name: order-handler
+        image: jeffreyoechsner/order_handler:latest
+        ports:
+        - containerPort: 3007
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+      restartPolicy: Always

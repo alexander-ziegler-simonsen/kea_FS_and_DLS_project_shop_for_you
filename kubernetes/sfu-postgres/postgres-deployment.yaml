@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sfu-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sfu-postgres
+  template:
+    metadata:
+      labels:
+        app: sfu-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+        volumeMounts:
+        - name: postgresdata
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgresdata
+        persistentVolumeClaim:
+          claimName: postgresdata

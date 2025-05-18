@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-consumer
+  template:
+    metadata:
+      labels:
+        app: order-consumer
+    spec:
+      containers:
+      - name: order-consumer
+        image: jeffreyoechsner/order-consumer:latest
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+      restartPolicy: Always
