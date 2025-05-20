@@ -15,7 +15,7 @@ COPY . .
 # Compile TypeScript files
 RUN tsc
 
-EXPOSE 3005
+EXPOSE 3006
 
 # Run the compiled JavaScript file
 CMD ["node", "dist/server.js"]

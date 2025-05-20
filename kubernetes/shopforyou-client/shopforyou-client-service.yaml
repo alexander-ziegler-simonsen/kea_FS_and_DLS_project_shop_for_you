@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: shopforyou-client
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 30081
   selector:
     app: shopforyou-client

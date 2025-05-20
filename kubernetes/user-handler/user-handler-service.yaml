@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: user-handler
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 3006
       targetPort: 3006
+      nodePort: 30306
   selector:
     app: user-handler

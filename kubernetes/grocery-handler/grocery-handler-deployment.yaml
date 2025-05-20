@@ -18,6 +18,4 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3005
-        envFrom:
-        - configMapRef:
-            name: shopforyou-config
+      restartPolicy: Always

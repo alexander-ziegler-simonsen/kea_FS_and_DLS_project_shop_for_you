@@ -14,7 +14,15 @@ const PORT = process.env.PORT || 3007;
 app.use(express.json());
 
 // Enable CORS
-app.use(cors({ origin: ['http://localhost:8080'] }));
+app.use(cors({
+  origin: [
+    'http://localhost:30081',
+    'http://localhost:8080'
+  ],
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Initialize database connection
 AppDataSource.initialize()
@@ -76,6 +84,17 @@ app.post('/orders', async (req: Request, res: Response, next: NextFunction) => {
     await publishToRabbit(orderlines);
 
     res.status(201).json(savedOrder);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET endpoint to fetch all orders at /api/orders
+app.get('/api/orders', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orderRepository = AppDataSource.getRepository(Order);
+    const orders = await orderRepository.find({ relations: ['orderlines'] });
+    res.json(orders);
   } catch (error) {
     next(error);
   }

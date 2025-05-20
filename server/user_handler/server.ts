@@ -74,7 +74,15 @@ AppDataSource.initialize().then(async () => {
   console.error('❌ Database connection failed:', error);
 });
 
-app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
+// Enable CORS
+app.use(cors({
+  origin: [
+    'http://localhost:30081',
+    'http://localhost:8080',
+    'http://127.0.0.1:5500'
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 // -------------------- USER REGISTRATION --------------------

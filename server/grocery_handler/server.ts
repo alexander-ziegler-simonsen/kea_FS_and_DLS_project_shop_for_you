@@ -27,7 +27,22 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
+const allowedOrigins = [
+  'http://localhost:8080',
+  'http://localhost:30081',
+  'http://localhost:30305'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow server-to-server, curl, etc.
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
@@ -525,4 +540,4 @@ async function startQuantityUpdateConsumer() {
 
 startQuantityUpdateConsumer();
 
-app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
+app.listen(3005, '0.0.0.0', () => console.log('🚀 Server running at http://0.0.0.0:3005'));

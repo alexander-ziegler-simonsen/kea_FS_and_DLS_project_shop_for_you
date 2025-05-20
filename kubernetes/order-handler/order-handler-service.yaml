@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: order-handler
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 3007
       targetPort: 3007
+      nodePort: 30307
   selector:
     app: order-handler

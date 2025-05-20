@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: grocery-handler
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 3005
       targetPort: 3005
+      nodePort: 30305
   selector:
     app: grocery-handler
