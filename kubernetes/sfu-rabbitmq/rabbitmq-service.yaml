@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: sfu-rabbitmq
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - name: amqp
       port: 5672
@@ -11,5 +11,6 @@ spec:
     - name: management
       port: 15672
       targetPort: 15672
+      nodePort: 30083 # You can change this to any available port between 30000-32767
   selector:
     app: sfu-rabbitmq
