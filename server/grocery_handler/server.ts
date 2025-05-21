@@ -351,21 +351,19 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       }
     }
 
-    // --- Dirty-checking and add-only update for amounts ---
+    // --- Only create a new Amount entity if the value is different from the latest ---
     if (Array.isArray(req.body.amounts)) {
       const newAmounts = req.body.amounts.map((a: any) => a.amount);
-      const currentAmounts = (existingGrocery.amounts || []).map((a: any) => a.amount);
-      const amountsToAdd = newAmounts.filter((amount: number) => !currentAmounts.includes(amount));
-      if (amountsToAdd.length > 0) {
-        for (const amount of amountsToAdd) {
-          let amountEntity = await amountRepo.findOne({ where: { amount } });
-          if (!amountEntity) {
-            amountEntity = amountRepo.create({ amount });
-            await amountRepo.save(amountEntity);
-          }
-          existingGrocery.amounts.push(amountEntity);
-        }
+      // Assume only one amount per update (if multiple, use the last one)
+      const newAmount = newAmounts[newAmounts.length - 1];
+      const currentAmounts = existingGrocery.amounts || [];
+      const latestAmount = currentAmounts.length > 0 ? currentAmounts[currentAmounts.length - 1].amount : undefined;
+      if (latestAmount !== newAmount) {
+        const amountEntity = amountRepo.create({ amount: newAmount });
+        await amountRepo.save(amountEntity);
+        existingGrocery.amounts = [...currentAmounts, amountEntity];
       }
+      // If the same, do nothing (keep existing amounts)
     }
 
     await groceryRepo.save(existingGrocery);
