@@ -8,6 +8,10 @@ spec:
       labels:
         app: sfy-seeder
     spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox
+        command: ['sh', '-c', 'until nc -z sfu-postgres 5432; do echo waiting for postgres; sleep 2; done;']
       containers:
       - name: seeder
         image: jeffreyoechsner/sfy-seeder:latest

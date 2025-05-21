@@ -1,0 +1,16 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: example-prometheus-scaledobject
+spec:
+  scaleTargetRef:
+    name: order-consumer
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus:9090
+        metricName: rabbitmq_queue_messages_ready
+        threshold: '10'
+        query: sum(rabbitmq_queue_messages_ready)

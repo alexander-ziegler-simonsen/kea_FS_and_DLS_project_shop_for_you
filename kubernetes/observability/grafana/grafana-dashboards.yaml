@@ -1,0 +1,3 @@
+# Example: RabbitMQ Exporter Dashboard
+# You can import dashboards from Grafana.com or define your own here.
+# See https://grafana.com/grafana/dashboards/10991 for a RabbitMQ dashboard JSON.

@@ -25,4 +25,8 @@ spec:
               key: MON_HOST
         - name: ME_CONFIG_SITE_BASEURL
           value: "/"
+        - name: ME_CONFIG_BASICAUTH_USERNAME
+          value: "root"
+        - name: ME_CONFIG_BASICAUTH_PASSWORD
+          value: "password"
       restartPolicy: Always
