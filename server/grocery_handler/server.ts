@@ -31,13 +31,6 @@ app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
-  function getRabbitUrl() {
-    const isProd = process.env.NODE_ENV === 'production';
-    const protocol = isProd ? 'amqps' : 'amqp';
-    const vhost = process.env.RABBIT_VHOST;
-    const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
-    return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
-  }
 
   const url = getRabbitUrl();
 
@@ -374,7 +367,7 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
     });
 
     // Publish to RabbitMQ to update in MongoDB
-    const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+    const url = getRabbitUrl();
     try {
       const connection = await amqp.connect(url);
       const channel = await connection.createChannel();
@@ -413,7 +406,7 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
     await groceryRepo.save(grocery);
 
     // Publish to RabbitMQ to delete from MongoDB
-    const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+    const url = getRabbitUrl();
     try {
       const connection = await amqp.connect(url);
       const channel = await connection.createChannel();
@@ -488,15 +481,24 @@ app.post('/api/upload-to-imgur', upload.single('image'), (req: Request, res: Res
   })().catch(next);
 });
 
+function getRabbitUrl(): string {
+  const isProd = process.env.NODE_ENV === 'production';
+  const protocol = isProd ? 'amqps' : 'amqp';
+  const vhost = process.env.RABBIT_VHOST;
+  const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+  return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+}
+
 async function startQuantityUpdateConsumer() {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  const url = getRabbitUrl();
+
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     await channel.assertExchange('grocery-exchange', 'topic', { durable: true });
 
     const queue = await channel.assertQueue('', { exclusive: true });
-    channel.bindQueue(queue.queue, 'grocery-exchange', 'grocery.quantity.update');
+    await channel.bindQueue(queue.queue, 'grocery-exchange', 'grocery.quantity.update');
 
     channel.consume(queue.queue, async (msg) => {
       if (msg) {
@@ -515,9 +517,9 @@ async function startQuantityUpdateConsumer() {
             amount.amount -= groceryamount;
           });
           await groceryRepo.save(grocery);
-          console.log(`Updated quantity for grocery: ${groceryname}`);
+          console.log(`✅ Updated quantity for grocery: ${groceryname}`);
         } else {
-          console.error(`Grocery not found: ${groceryname}`);
+          console.error(`❌ Grocery not found: ${groceryname}`);
         }
 
         channel.ack(msg);
@@ -526,7 +528,7 @@ async function startQuantityUpdateConsumer() {
 
     console.log('🚀 Listening for grocery.quantity.update messages...');
   } catch (err) {
-    console.error('Failed to start quantity update consumer:', err);
+    console.error('❌ Failed to start quantity update consumer:', err);
   }
 }
 
