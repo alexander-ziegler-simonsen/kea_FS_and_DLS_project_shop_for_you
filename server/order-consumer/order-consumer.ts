@@ -1,25 +1,35 @@
 import amqp from 'amqplib';
 
-const RABBITMQ_URL = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
-const QUEUE_NAME = 'order-queue';
+
 
 async function connectRabbitMQ() {
+  function getRabbitUrl() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const protocol = isProd ? 'amqps' : 'amqp';
+    const vhost = process.env.RABBIT_VHOST;
+    const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+    return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+  }
+
+  const RABBITMQ_URL = getRabbitUrl();
+  const QUEUE_NAME = 'order-queue';
+
   try {
-    console.log('Connecting to RabbitMQ...');
+    console.log(`Connecting to RabbitMQ at ${RABBITMQ_URL}...`);
     const connection = await amqp.connect(RABBITMQ_URL);
     const channel = await connection.createChannel();
 
     await channel.assertQueue(QUEUE_NAME, { durable: true });
-    console.log(`Listening for messages on queue: ${QUEUE_NAME}`);
+    console.log(`✅ Listening for messages on queue: ${QUEUE_NAME}`);
 
     channel.consume(
       QUEUE_NAME,
       (msg) => {
         if (msg) {
           const messageContent = msg.content.toString();
-          console.log('Received message:', messageContent);
+          console.log('📦 Received message:', messageContent);
 
-          // Process the message (e.g., log or perform operations)
+          // Process the message
           processOrderMessage(JSON.parse(messageContent));
 
           // Acknowledge the message
@@ -29,14 +39,14 @@ async function connectRabbitMQ() {
       { noAck: false }
     );
 
-    // Handle graceful shutdown
+    // Graceful shutdown
     process.on('SIGINT', async () => {
-      console.log('Closing RabbitMQ connection...');
+      console.log('🔌 Closing RabbitMQ connection...');
       await connection.close();
       process.exit(0);
     });
   } catch (error) {
-    console.error('Failed to connect to RabbitMQ:', error);
+    console.error('❌ Failed to connect to RabbitMQ:', error);
     setTimeout(connectRabbitMQ, 5000); // Retry after 5 seconds
   }
 }

@@ -31,19 +31,28 @@ app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  function getRabbitUrl() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const protocol = isProd ? 'amqps' : 'amqp';
+    const vhost = process.env.RABBIT_VHOST;
+    const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+    return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+  }
+
+  const url = getRabbitUrl();
+
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     const exchange = 'grocery-exchange';
-    const queueName = 'grocery-queue'; // Use a named queue
+    const queueName = 'grocery-queue';
     const routingKey = 'grocery.created';
 
     await channel.assertExchange(exchange, 'topic', { durable: true });
     await channel.assertQueue(queueName, {
-      durable: true,       // Ensure the queue is durable if you need message persistence
-      exclusive: false,    // Make it non-exclusive to allow multiple connections
-      autoDelete: false,   // Prevent auto-deletion
+      durable: true,
+      exclusive: false,
+      autoDelete: false,
     });
 
     await channel.bindQueue(queueName, exchange, routingKey);

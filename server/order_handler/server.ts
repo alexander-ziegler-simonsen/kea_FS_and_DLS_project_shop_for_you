@@ -27,7 +27,16 @@ AppDataSource.initialize()
 
 // Function to publish a message to RabbitMQ
 async function publishToRabbit(orderlines: any[]) {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  function getRabbitUrl() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const protocol = isProd ? 'amqps' : 'amqp';
+    const vhost = process.env.RABBIT_VHOST;
+    const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+    return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+  }
+
+  const url = getRabbitUrl();
+
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
@@ -42,12 +51,12 @@ async function publishToRabbit(orderlines: any[]) {
         groceryamount: line.groceryamount,
       };
       channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
-      console.log(`Message published to queue '${queue}':`, message);
+      console.log(`📦 Message published to queue '${queue}':`, message);
     }
 
     setTimeout(() => connection.close(), 500);
   } catch (err) {
-    console.error('RabbitMQ publish failed:', err);
+    console.error('❌ RabbitMQ publish failed:', err);
   }
 }
 

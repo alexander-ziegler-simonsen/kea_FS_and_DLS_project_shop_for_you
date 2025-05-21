@@ -5,7 +5,15 @@ import { MongoClient } from 'mongodb';
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function connectRabbit(retries = 15) {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  function getRabbitUrl() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const protocol = isProd ? 'amqps' : 'amqp';
+    const vhost = process.env.RABBIT_VHOST;
+    const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+    return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+  }
+
+  const url = getRabbitUrl();
 
   for (let i = 0; i < retries; i++) {
     try {
@@ -16,9 +24,10 @@ async function connectRabbit(retries = 15) {
     } catch (err) {
       console.log(`❌ RabbitMQ connection failed. Retry ${i + 1}/${retries}:`, err.message);
       console.error('Full error details:', err);
-      await sleep(3000);
+      await sleep(3000); // Ensure sleep is defined elsewhere in your code
     }
   }
+
   throw new Error('💥 Failed to connect to RabbitMQ after retries.');
 }
 
