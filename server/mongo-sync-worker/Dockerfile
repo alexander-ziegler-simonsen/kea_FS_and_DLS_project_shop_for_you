@@ -17,8 +17,8 @@ COPY ../../ ./server/mongo-sync-worker
 # Skift til grocery_handler-mappen
 WORKDIR /app/server/mongo-sync-worker
 
-# Start server.ts
-CMD ["npx", "ts-node", "--esm", "consumer.js"]
+# Start consumer.js using node
+CMD ["node", "consumer.js"]
 
 
 
