@@ -198,7 +198,7 @@ services:
       POST_PORT: ${POST_PORT}
       POST_DB: ${POST_DB}
       DATABASE_URL: ${POST_DATABASE_URL}
-      JWT_SECRET: 9d5a7466d8e212980c3fd60c2178c1b45dff75cd
+      JWT_SECRET: ${JWT_SECRET}
 
   order_handler:
     build:

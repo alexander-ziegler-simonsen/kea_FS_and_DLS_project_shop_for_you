@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import amqp from 'amqplib';
-import { MongoClient } from 'mongodb';
+import { connectMongo } from './mongo-connection.js';
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -31,12 +31,11 @@ async function connectRabbit(retries = 15) {
   throw new Error('💥 Failed to connect to RabbitMQ after retries.');
 }
 
-async function connectMongo(retries = 5) {
-  const url = `mongodb://${process.env.MON_USERNAME}:${process.env.MON_PASSWORD}@${process.env.MON_HOST}:${process.env.MON_PORT}`;
-
+// Retry wrapper for connectMongo from mongo-connection.ts
+async function connectMongoWithRetry(retries = 5) {
   for (let i = 0; i < retries; i++) {
     try {
-      const client = await MongoClient.connect(url);
+      const client = await connectMongo();
       console.log('✅ Connected to MongoDB');
       return client;
     } catch (err) {
@@ -62,7 +61,8 @@ async function startConsumer() {
   channel.bindQueue('grocery-queue-deleted', 'grocery-exchange', 'grocery.deleted');
   channel.bindQueue('grocery-queue-updated', 'grocery-exchange', 'grocery.updated');
 
-  const mongo = await connectMongo();
+  // Use retry wrapper for MongoDB connection
+  const mongo = await connectMongoWithRetry();
   const db = mongo.db(process.env.MON_DB || 'mirror');
   const groceries = db.collection('groceries');
 
