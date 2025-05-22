@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import http from 'http';
 
 // Minimal HTTP server for Render
-const PORT = process.env.ORDER_PORT;
+const PORT = process.env.ORDER_PORT || 10232;
 http.createServer((_, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('Order consumer is running.\n');
