@@ -34,7 +34,7 @@ async function connectRabbitMQ() {
 
     channel.consume(
       QUEUE_NAME,
-      (msg) => {
+      (msg: amqp.ConsumeMessage | null) => {
         if (msg) {
           const messageContent = msg.content.toString();
           console.log('📦 Received message:', messageContent);
