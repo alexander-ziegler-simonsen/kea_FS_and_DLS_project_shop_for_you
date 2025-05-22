@@ -1,6 +1,16 @@
 import 'dotenv/config';
 import amqp from 'amqplib';
 import { connectMongo } from './mongo-connection.js';
+import http from 'http';
+
+// Minimal HTTP server for Render
+const PORT = process.env.sync_PORT || 3000;
+http.createServer((_, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Mongo sync worker is running.\n');
+}).listen(PORT, () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 

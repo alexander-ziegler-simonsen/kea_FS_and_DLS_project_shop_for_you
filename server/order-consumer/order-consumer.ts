@@ -1,4 +1,14 @@
 import amqp from 'amqplib';
+import http from 'http';
+
+// Minimal HTTP server for Render
+const PORT = process.env.ORDER_PORT;
+http.createServer((_, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Order consumer is running.\n');
+}).listen(PORT, () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});
 
 
 
