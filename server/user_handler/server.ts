@@ -74,7 +74,7 @@ AppDataSource.initialize().then(async () => {
   console.error('❌ Database connection failed:', error);
 });
 
-app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
+app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080',"https://kea-fs-and-dls-project-shop-for-you.onrender.com"] }));
 app.use(express.json());
 
 // -------------------- USER REGISTRATION --------------------
