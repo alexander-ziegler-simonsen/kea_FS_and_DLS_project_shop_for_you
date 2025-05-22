@@ -7,15 +7,21 @@ import categories from "./categories";
 const apiClient = new ApiClient<Category>("/api/categories");
 
 const useCategories = () =>
-  useQuery<{ results: Category[] }, Error>({
-    queryKey: ["categories"],
-    queryFn: async () => {
+  useQuery<{ results: Category[] }, Error>(
+    ["categories"],
+    async () => {
       const response = await apiClient.getAll();
-      return { results: (response as any).categories || [] }; // Explicitly cast to handle server response
+      // Ensure the response is always in the expected format
+      if (response && Array.isArray((response as any).categories)) {
+        return { results: (response as any).categories };
+      }
+      return { results: [] };
     },
-    staleTime: ms("0"),
-    cacheTime: ms("0"),
-    initialData: { results: categories.results },
-  });
+    {
+      staleTime: ms("0"),
+      cacheTime: ms("0"),
+      initialData: { results: categories.results as unknown as Category[] },
+    }
+  );
 
 export default useCategories;
