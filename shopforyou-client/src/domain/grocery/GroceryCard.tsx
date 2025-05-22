@@ -8,17 +8,17 @@ interface Props {
 }
 
 const GroceryCard = ({ grocery }: Props) => {
-  const imageUrl = (grocery.image) || noImagePlaceholder;
+  const imageUrl = (grocery.images && grocery.images.length > 0 && grocery.images[0]?.image) || noImagePlaceholder;
   const addToCart = useCartStore((state) => state.addToCart);
   const cartQuantity = useCartStore((state) => {
-    const item = state.items.find((i) => i.id === grocery.id);
+    const item = state.items.find((i) => i.id === String(grocery.id));
     return item ? item.quantity : 0;
   });
   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
 
-  const price = grocery.price ?? 0;
+  const price = (grocery.prices && grocery.prices.length > 0 && typeof grocery.prices[0]?.price === 'number') ? grocery.prices[0].price : 0;
 
   const handleAddToCart = (e?: React.MouseEvent) => {
     if (e) {
@@ -27,10 +27,10 @@ const GroceryCard = ({ grocery }: Props) => {
     }
     const item = {
       id: String(grocery.id),
-      name: grocery.name || "",
-      price: grocery.price ?? 0,
-      image: grocery.image || "",
-      amount: grocery.amounts?.[0]?.amount ?? 0, // Pass correct amount to cart
+      name: (grocery.names && grocery.names.length > 0 && typeof grocery.names[0]?.name === 'string') ? grocery.names[0].name : "",
+      price: (grocery.prices && grocery.prices.length > 0 && typeof grocery.prices[0]?.price === 'number') ? grocery.prices[0].price : 0,
+      image: (grocery.images && grocery.images.length > 0 && typeof grocery.images[0]?.image === 'string') ? grocery.images[0].image : "",
+      amount: (grocery.amounts && grocery.amounts.length > 0 && typeof grocery.amounts[0]?.amount === 'number') ? grocery.amounts[0].amount : 0,
     };
     addToCart(item);
   };
@@ -39,7 +39,7 @@ const GroceryCard = ({ grocery }: Props) => {
     <Card maxW="300px" borderRadius="lg" overflow="hidden">
       <Image 
         src={imageUrl} 
-        alt={grocery.name} 
+        alt={(grocery.names && grocery.names.length > 0 && grocery.names[0]?.name) || "Grocery Image"} 
         width="100%" 
         height="200px" 
         objectFit="cover" 
@@ -49,7 +49,7 @@ const GroceryCard = ({ grocery }: Props) => {
         }}
       />
       <CardBody>
-        <Heading fontSize="2xl">{grocery.name}</Heading>
+        <Heading fontSize="2xl">{(grocery.names && grocery.names.length > 0 && grocery.names[0]?.name) || ""}</Heading>
         <HStack justifyContent="space-between" mt={4}>
           {cartQuantity === 0 ? (
             <Button colorScheme="teal" size="sm" onClick={handleAddToCart}>

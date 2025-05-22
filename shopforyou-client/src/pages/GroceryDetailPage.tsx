@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import GroceryAttributes from "../domain/grocery/GroceryAttributes";
 import useGrocery from "../domain/grocery/useGrocery";
-import axios from "axios";
 import GroceryUpdateForm from "../forms/GroceryUpdateForm";
 import useCategories from "../domain/category/useCategories";
 import type { Category } from "../domain/category/Category";

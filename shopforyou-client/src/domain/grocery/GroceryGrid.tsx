@@ -38,23 +38,13 @@ const GroceryGrid = () => {
             ))
           : data?.pages.map((page, index) => (
               <React.Fragment key={index}>
-                {page.results.map((grocery) => {
-                  const transformedGrocery = {
-                    id: grocery.id.toString(),
-                    name: grocery.names?.[0]?.name || "Unknown",
-                    image: grocery.images?.[0]?.image || "",
-                    category: grocery.categories?.[0]?.name || "Uncategorized",
-                    price: grocery.prices?.[0]?.price || 0,
-                    amounts: grocery.amounts,
-                  };
-                  return (
-                    <GroceryCardContainer key={grocery.id}>
-                      <Link to={`/groceries/${grocery.id}`}>
-                        <GroceryCard grocery={transformedGrocery} />
-                      </Link>
-                    </GroceryCardContainer>
-                  );
-                })}
+                {page.results.map((grocery) => (
+                  <GroceryCardContainer key={grocery.id}>
+                    <Link to={`/groceries/${grocery.id}`}>
+                      <GroceryCard grocery={grocery} />
+                    </Link>
+                  </GroceryCardContainer>
+                ))}
               </React.Fragment>
             ))}
       </SimpleGrid>
