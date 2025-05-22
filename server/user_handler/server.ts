@@ -64,9 +64,24 @@ AppDataSource.initialize().then(async () => {
 
   // Create two users on startup
   try {
-    const user1 = await register('user1@example.com', 'user1', 'password123', 'user', '123 Main St');
-    const user2 = await register('user2@example.com', 'user2', 'password123', 'admin', '456 Elm St');
-    console.log('✅ Two users created successfully:', { user1, user2 });
+    const userRepository = AppDataSource.getRepository(User);
+
+    const existingUser1 = await userRepository.findOneBy({ email: 'user1@example.com' });
+    const existingUser2 = await userRepository.findOneBy({ email: 'user2@example.com' });
+
+    if (!existingUser1) {
+      const user1 = await register('user1@example.com', 'user1', 'password123', 'user', '123 Main St');
+      console.log('✅ User1 created successfully:', user1);
+    } else {
+      console.log('ℹ️ User1 already exists:', existingUser1);
+    }
+
+    if (!existingUser2) {
+      const user2 = await register('user2@example.com', 'user2', 'password123', 'admin', '456 Elm St');
+      console.log('✅ User2 created successfully:', user2);
+    } else {
+      console.log('ℹ️ User2 already exists:', existingUser2);
+    }
   } catch (error) {
     console.error('❌ Failed to create initial users:', error);
   }
@@ -79,7 +94,8 @@ app.use(cors({
   origin: [
     'http://localhost:30081',
     'http://localhost:8080',
-    'http://127.0.0.1:5500'
+    'http://127.0.0.1:5500',
+    'http://localhost:30306' // User-handler service URL
   ],
   credentials: true,
 }));

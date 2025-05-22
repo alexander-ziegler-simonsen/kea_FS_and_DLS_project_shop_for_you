@@ -12,6 +12,21 @@ spec:
       labels:
         app: sfu-rabbitmq
     spec:
+      volumes:
+        - name: rabbitmq-config
+          configMap:
+            name: rabbitmq-config
+        - name: rabbitmq-logs
+          hostPath:
+            path: /var/log/rabbitmq
+            type: DirectoryOrCreate
+      initContainers:
+        - name: init-rabbitmq-logs
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /var/log/rabbitmq && touch /var/log/rabbitmq/rabbitmq.log"]
+          volumeMounts:
+            - name: rabbitmq-logs
+              mountPath: /var/log/rabbitmq
       containers:
       - name: rabbitmq
         image: rabbitmq:management
@@ -21,3 +36,9 @@ spec:
         envFrom:
         - configMapRef:
             name: shopforyou-config
+        volumeMounts:
+          - name: rabbitmq-config
+            mountPath: /etc/rabbitmq/rabbitmq.conf
+            subPath: rabbitmq.conf
+          - name: rabbitmq-logs
+            mountPath: /var/log/rabbitmq

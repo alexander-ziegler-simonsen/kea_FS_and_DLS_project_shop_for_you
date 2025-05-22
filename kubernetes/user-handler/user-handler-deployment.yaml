@@ -12,9 +12,24 @@ spec:
       labels:
         app: user-handler
     spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox
+        command: ['sh', '-c', 'until nc -z sfu-postgres 5432; do echo waiting for postgres; sleep 2; done;']
       containers:
       - name: user-handler
         image: jeffreyoechsner/user_handler:latest
         ports:
         - containerPort: 3006
+        env:
+        - name: DATABASE_URL
+          value: "postgres://root:password@sfu-postgres:5432/postgres"
+        - name: RABBIT_HOST
+          value: "sfu-rabbitmq"
+        - name: RABBIT_PORT
+          value: "5672"
+        - name: RABBIT_USERNAME
+          value: "root"
+        - name: RABBIT_PASSWORD
+          value: "password"
       restartPolicy: Always

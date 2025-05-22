@@ -30,6 +30,15 @@ spec:
             - name: varlogcontainers
               mountPath: /var/log/containers
               readOnly: true
+            - name: rabbitmq-logs
+              mountPath: /var/log/rabbitmq
+              readOnly: true
+            - name: order-consumer-logs
+              mountPath: /var/log/order-consumer
+              readOnly: true
+            - name: transaction-receiver-logs
+              mountPath: /var/log/transaction-receiver
+              readOnly: true
       volumes:
         - name: promtail-config
           configMap:
@@ -43,3 +52,12 @@ spec:
         - name: varlogcontainers
           hostPath:
             path: /var/log/containers
+        - name: rabbitmq-logs
+          hostPath:
+            path: /var/log/rabbitmq
+        - name: order-consumer-logs
+          hostPath:
+            path: /var/log/order-consumer
+        - name: transaction-receiver-logs
+          hostPath:
+            path: /var/log/transaction-receiver

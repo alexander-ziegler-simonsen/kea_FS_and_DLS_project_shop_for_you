@@ -12,7 +12,7 @@ data:
     positions:
       filename: /tmp/positions.yaml
     clients:
-      - url: http://loki:3100/loki/api/v1/push
+      - url: http://loki.default.svc.cluster.local:3100/loki/api/v1/push
     scrape_configs:
       - job_name: kubernetes-pods
         kubernetes_sd_configs:
@@ -36,3 +36,64 @@ data:
             target_label: __path__
         pipeline_stages:
           - docker: {}
+      - job_name: rabbitmq-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: rabbitmq
+              __path__: /var/log/rabbitmq/rabbitmq.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) \[info\] (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02 15:04:05.000000+00:00"
+          - output:
+              source: message
+      - job_name: order-consumer-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: order-consumer
+              __path__: /var/log/order-consumer/order-consumer.log
+        pipeline_stages:
+          - regex:
+              expression: '^\[(?P<timestamp>[^\]]+)\] (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: mongodb-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: mongodb
+              __path__: /var/log/mongodb/mongodb.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<level>[^ ]+) (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: postgres-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: postgres
+              __path__: /var/log/postgresql/postgresql.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<level>[^ ]+) (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+

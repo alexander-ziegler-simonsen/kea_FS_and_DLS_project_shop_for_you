@@ -1,7 +1,22 @@
 import amqp from 'amqplib';
+import fs from 'fs';
+import path from 'path';
 
 const RABBITMQ_URL = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
 const QUEUE_NAME = 'order-queue';
+
+const LOG_DIR = '/var/log/order-consumer';
+const LOG_FILE = path.join(LOG_DIR, 'order-consumer.log');
+
+// Ensure the log directory exists
+if (!fs.existsSync(LOG_DIR)) {
+  fs.mkdirSync(LOG_DIR, { recursive: true });
+}
+
+function logToFile(message: string) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(LOG_FILE, `[${timestamp}] ${message}\n`);
+}
 
 async function connectRabbitMQ() {
   try {
@@ -42,8 +57,8 @@ async function connectRabbitMQ() {
 }
 
 function processOrderMessage(message: any) {
-  // Example: Log the order details
   console.log('Processing order:', message);
+  logToFile(`Processing order: ${JSON.stringify(message)}`);
 
   // Add your logic here (e.g., update inventory, notify services, etc.)
 }

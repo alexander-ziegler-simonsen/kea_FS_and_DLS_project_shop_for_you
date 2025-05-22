@@ -16,28 +16,15 @@ spec:
     spec:
       containers:
         - name: loki
-          image: grafana/loki:2.9.3
+          image: grafana/loki:latest
           args:
             - "-config.file=/etc/loki/loki-config.yaml"
-          env:
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
           ports:
             - containerPort: 3100
           volumeMounts:
             - name: loki-config
-              mountPath: /etc/loki/
-            - name: loki-storage
-              mountPath: /loki
-            - name: wal
-              mountPath: /wal
+              mountPath: /etc/loki
       volumes:
         - name: loki-config
           configMap:
             name: loki-config
-        - name: loki-storage
-          emptyDir: {}
-        - name: wal
-          emptyDir: {}

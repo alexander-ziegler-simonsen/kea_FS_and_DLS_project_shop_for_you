@@ -18,4 +18,10 @@ spec:
         envFrom:
         - configMapRef:
             name: shopforyou-config
+        volumeMounts:
+        - name: order-consumer-logs
+          mountPath: /var/log/order-consumer
+      volumes:
+      - name: order-consumer-logs
+        emptyDir: {}
       restartPolicy: Always
