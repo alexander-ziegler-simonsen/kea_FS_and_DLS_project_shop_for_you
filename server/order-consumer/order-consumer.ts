@@ -12,20 +12,21 @@ http.createServer((_, res) => {
   console.log(`HTTP server listening on port ${PORT}`);
 });
 
+// Only set up logging if not in production
+let logToFile = (_: string) => {};
+if (process.env.NODE_ENV !== 'production') {
+  const LOG_DIR = path.join(__dirname, 'logs');
+  const LOG_FILE = path.join(LOG_DIR, 'order-consumer.log');
 
+  // Ensure the log directory exists
+  if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+  }
 
-const LOG_DIR = '/var/log/order-consumer';
-const LOG_FILE = path.join(LOG_DIR, 'order-consumer.log');
-
-// Ensure the log directory exists
-if (!fs.existsSync(LOG_DIR)) {
-  fs.mkdirSync(LOG_DIR, { recursive: true });
-}
-
-function logToFile(message: string) {
-  if (process.env.NODE_ENV === 'production') return; // Skip logging in production
-  const timestamp = new Date().toISOString();
-  fs.appendFileSync(LOG_FILE, `[${timestamp}] ${message}\n`);
+  logToFile = function(message: string) {
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(LOG_FILE, `[${timestamp}] ${message}\n`);
+  };
 }
 
 async function connectRabbitMQ() {
