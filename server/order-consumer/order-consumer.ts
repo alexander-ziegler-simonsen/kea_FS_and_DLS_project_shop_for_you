@@ -23,6 +23,7 @@ if (!fs.existsSync(LOG_DIR)) {
 }
 
 function logToFile(message: string) {
+  if (process.env.NODE_ENV === 'production') return; // Skip logging in production
   const timestamp = new Date().toISOString();
   fs.appendFileSync(LOG_FILE, `[${timestamp}] ${message}\n`);
 }
