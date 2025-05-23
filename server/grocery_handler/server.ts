@@ -27,7 +27,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
+app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080', "https://kea-fs-and-dls-project-shop-for-you.onrender.com"] }));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
@@ -534,4 +534,4 @@ async function startQuantityUpdateConsumer() {
 
 startQuantityUpdateConsumer();
 
-app.listen(3005, '0.0.0.0', () => console.log('🚀 Server running at http://0.0.0.0:3005'));
+app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
