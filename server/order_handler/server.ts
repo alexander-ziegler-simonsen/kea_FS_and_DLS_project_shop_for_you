@@ -13,17 +13,8 @@ const PORT = process.env.PORT || 3007;
 // Middleware to parse JSON
 app.use(express.json());
 
-// Enable CORS
-app.use(cors({
-  origin: [
-    'http://localhost:30081',
-    'http://localhost:8080'
-  ],
-  credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(cors({ origin: ['http://localhost:8080', "https://kea-fs-and-dls-project-shop-for-you.onrender.com"] }));
+
+app.use(cors({ origin: ['http://localhost:8080', 'http://localhost:30081',   "https://kea-fs-and-dls-project-shop-for-you.onrender.com"] }));
 
 // Initialize database connection
 AppDataSource.initialize()

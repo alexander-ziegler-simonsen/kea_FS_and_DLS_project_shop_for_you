@@ -21,9 +21,9 @@ spec:
         - name: VITE_GROCERY_HANDLER_URL
           value: "http://localhost:30305"
         - name: VITE_USER_HANDLER_URL
-          value: "http://user-handler:30306"
+          value: "http://localhost:30306"
         - name: VITE_ORDER_HANDLER_URL
-          value: "http://order-handler:30307"
+          value: "http://localhost:30307"
         - name: CHOKIDAR_USEPOLLING
           value: "true"
       restartPolicy: Always

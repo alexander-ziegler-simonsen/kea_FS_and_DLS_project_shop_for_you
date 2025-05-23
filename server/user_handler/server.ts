@@ -89,18 +89,21 @@ AppDataSource.initialize().then(async () => {
   console.error('❌ Database connection failed:', error);
 });
 
-// Enable CORS
+
 app.use(cors({
   origin: [
+    'http://127.0.0.1:5500',
     'http://localhost:30081',
     'http://localhost:8080',
-    'http://127.0.0.1:5500',
-    'http://localhost:30306' // User-handler service URL
+    'https://kea-fs-and-dls-project-shop-for-you.onrender.com',
   ],
-  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow all necessary HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow necessary headers
+  credentials: true // Allow cookies or credentials if needed
 }));
-app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080',"https://kea-fs-and-dls-project-shop-for-you.onrender.com"] }));
 app.use(express.json());
+
+
 
 // -------------------- USER REGISTRATION --------------------
 app.post('/api/users/register',

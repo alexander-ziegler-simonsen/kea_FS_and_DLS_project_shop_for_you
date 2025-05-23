@@ -32,4 +32,7 @@ spec:
           value: "root"
         - name: RABBIT_PASSWORD
           value: "password"
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
       restartPolicy: Always
