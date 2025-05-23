@@ -1,6 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node,windows,macos,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,windows,macos,react
-
+configmap.yaml
 game/
 genre/
 ### macOS ###
@@ -14,13 +14,10 @@ Icon
 how-to.txt
 grocery-uploader-service-account.json
 
-<<<<<<< HEAD
 how-to.txt
-=======
 uploads/
 
 
->>>>>>> 6bd9325a5df312dffc5cf416cec62258dcb43466
 # Thumbnails
 ._*
 
