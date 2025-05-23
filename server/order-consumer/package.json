@@ -8,11 +8,11 @@
   "dependencies": {
     "amqplib": "^0.10.3",
     "dotenv": "^16.0.3",
-    "order-consumer": "file:"
+    "order-consumer": "file:",
+    "ts-node": "^10.9.1",
+    "@types/amqplib": "^0.10.7"
   },
   "devDependencies": {
-    "@types/amqplib": "^0.10.7",
-    "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
 }

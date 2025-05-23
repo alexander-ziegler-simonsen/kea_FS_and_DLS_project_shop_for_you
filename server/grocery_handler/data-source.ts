@@ -34,6 +34,7 @@ export const AppDataSource = new DataSource({
   ],
   migrations: [],
   subscribers: [],
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 export default AppDataSource;

@@ -105,6 +105,7 @@ services:
       MON_PASSWORD: ${MON_PASSWORD}
       MON_HOST: ${MON_HOST}
       MON_PORT: ${MON_PORT}
+      NODE_ENV: ${NODE_ENV}
       MON_DB: ${MON_DB}
     depends_on:
       - sfu-rabbitmq
@@ -121,6 +122,7 @@ services:
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
       RABBIT_HOST: ${RABBIT_HOST}
       RABBIT_PORT: ${RABBIT_PORT}
+      NODE_ENV: ${NODE_ENV}
     depends_on:
       - sfu-rabbitmq
     networks:
@@ -150,6 +152,7 @@ services:
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
       RABBIT_HOST: ${RABBIT_HOST}
       RABBIT_PORT: ${RABBIT_PORT}
+      NODE_ENV: ${NODE_ENV}
       IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID}
       MON_USERNAME: ${MON_USERNAME}
       MON_PASSWORD: ${MON_PASSWORD}
@@ -195,7 +198,7 @@ services:
       POST_PORT: ${POST_PORT}
       POST_DB: ${POST_DB}
       DATABASE_URL: ${POST_DATABASE_URL}
-      JWT_SECRET: 9d5a7466d8e212980c3fd60c2178c1b45dff75cd
+      JWT_SECRET: ${JWT_SECRET}
 
   order_handler:
     build:
@@ -216,6 +219,7 @@ services:
       POST_HOST: ${POST_HOST}
       POST_PORT: ${POST_PORT}
       POST_DB: ${POST_DB}
+      NODE_ENV: ${NODE_ENV}
       DATABASE_URL: ${POST_DATABASE_URL}
       RABBIT_USERNAME: ${RABBIT_USERNAME}
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}

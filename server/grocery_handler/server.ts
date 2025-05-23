@@ -27,38 +27,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-const allowedOrigins = [
-  'http://localhost:8080',
-  'http://localhost:30081',
-  'http://localhost:30305'
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow server-to-server, curl, etc.
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080'] }));
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+
+  const url = getRabbitUrl();
+
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     const exchange = 'grocery-exchange';
-    const queueName = 'grocery-queue'; // Use a named queue
+    const queueName = 'grocery-queue';
     const routingKey = 'grocery.created';
 
     await channel.assertExchange(exchange, 'topic', { durable: true });
     await channel.assertQueue(queueName, {
-      durable: true,       // Ensure the queue is durable if you need message persistence
-      exclusive: false,    // Make it non-exclusive to allow multiple connections
-      autoDelete: false,   // Prevent auto-deletion
+      durable: true,
+      exclusive: false,
+      autoDelete: false,
     });
 
     await channel.bindQueue(queueName, exchange, routingKey);
@@ -357,21 +344,19 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       }
     }
 
-    // --- Dirty-checking and add-only update for amounts ---
+    // --- Only create a new Amount entity if the value is different from the latest ---
     if (Array.isArray(req.body.amounts)) {
       const newAmounts = req.body.amounts.map((a: any) => a.amount);
-      const currentAmounts = (existingGrocery.amounts || []).map((a: any) => a.amount);
-      const amountsToAdd = newAmounts.filter((amount: number) => !currentAmounts.includes(amount));
-      if (amountsToAdd.length > 0) {
-        for (const amount of amountsToAdd) {
-          let amountEntity = await amountRepo.findOne({ where: { amount } });
-          if (!amountEntity) {
-            amountEntity = amountRepo.create({ amount });
-            await amountRepo.save(amountEntity);
-          }
-          existingGrocery.amounts.push(amountEntity);
-        }
+      // Assume only one amount per update (if multiple, use the last one)
+      const newAmount = newAmounts[newAmounts.length - 1];
+      const currentAmounts = existingGrocery.amounts || [];
+      const latestAmount = currentAmounts.length > 0 ? currentAmounts[currentAmounts.length - 1].amount : undefined;
+      if (latestAmount !== newAmount) {
+        const amountEntity = amountRepo.create({ amount: newAmount });
+        await amountRepo.save(amountEntity);
+        existingGrocery.amounts = [...currentAmounts, amountEntity];
       }
+      // If the same, do nothing (keep existing amounts)
     }
 
     await groceryRepo.save(existingGrocery);
@@ -382,7 +367,7 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
     });
 
     // Publish to RabbitMQ to update in MongoDB
-    const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+    const url = getRabbitUrl();
     try {
       const connection = await amqp.connect(url);
       const channel = await connection.createChannel();
@@ -421,7 +406,7 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
     await groceryRepo.save(grocery);
 
     // Publish to RabbitMQ to delete from MongoDB
-    const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+    const url = getRabbitUrl();
     try {
       const connection = await amqp.connect(url);
       const channel = await connection.createChannel();
@@ -496,15 +481,24 @@ app.post('/api/upload-to-imgur', upload.single('image'), (req: Request, res: Res
   })().catch(next);
 });
 
+function getRabbitUrl(): string {
+  const isProd = process.env.NODE_ENV === 'production';
+  const protocol = isProd ? 'amqps' : 'amqp';
+  const vhost = process.env.RABBIT_VHOST;
+  const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+  return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+}
+
 async function startQuantityUpdateConsumer() {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  const url = getRabbitUrl();
+
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     await channel.assertExchange('grocery-exchange', 'topic', { durable: true });
 
     const queue = await channel.assertQueue('', { exclusive: true });
-    channel.bindQueue(queue.queue, 'grocery-exchange', 'grocery.quantity.update');
+    await channel.bindQueue(queue.queue, 'grocery-exchange', 'grocery.quantity.update');
 
     channel.consume(queue.queue, async (msg) => {
       if (msg) {
@@ -523,9 +517,9 @@ async function startQuantityUpdateConsumer() {
             amount.amount -= groceryamount;
           });
           await groceryRepo.save(grocery);
-          console.log(`Updated quantity for grocery: ${groceryname}`);
+          console.log(`✅ Updated quantity for grocery: ${groceryname}`);
         } else {
-          console.error(`Grocery not found: ${groceryname}`);
+          console.error(`❌ Grocery not found: ${groceryname}`);
         }
 
         channel.ack(msg);
@@ -534,7 +528,7 @@ async function startQuantityUpdateConsumer() {
 
     console.log('🚀 Listening for grocery.quantity.update messages...');
   } catch (err) {
-    console.error('Failed to start quantity update consumer:', err);
+    console.error('❌ Failed to start quantity update consumer:', err);
   }
 }
 

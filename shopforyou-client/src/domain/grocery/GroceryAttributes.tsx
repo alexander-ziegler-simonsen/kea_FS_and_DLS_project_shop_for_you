@@ -75,9 +75,6 @@ const GroceryAttributes = ({ grocery }: Props) => {
         <Flex align="center" mb={2} gap={3}>
           <Text fontSize="2xl" fontWeight="bold">{price} $</Text>
         </Flex>
-        {grocery.prices[0]?.label && (
-          <Text color="green.600" fontWeight="semibold" mb={2}>{grocery.prices[0].label}</Text>
-        )}
         <Flex gap={2} mb={4}>
           {cartQuantity === 0 ? (
             <Button colorScheme="green" onClick={handleAddToCart}>Add to cart</Button>

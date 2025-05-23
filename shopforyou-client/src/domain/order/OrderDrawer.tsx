@@ -1,6 +1,6 @@
 // This component renders a Drawer that opens from the right when triggered
 import { Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, DrawerFooter, useDisclosure } from "@chakra-ui/react";
-import { ReactNode, forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { ReactNode, forwardRef, useImperativeHandle, useState } from "react";
 import useCartStore from "./cartStore";
 import { jwtDecode } from "jwt-decode";
 import OrderDetails from "./OrderDetails";
@@ -12,7 +12,7 @@ export interface OrderDrawerHandle {
   close: () => void;
 }
 
-const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((props, ref) => {
+const OrderDrawer = forwardRef<OrderDrawerHandle, { children?: ReactNode }>((_, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   useImperativeHandle(ref, () => ({ open: onOpen, close: onClose }));
   const cartItems = useCartStore((state) => state.items);

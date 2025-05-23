@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import GroceryForm from '../forms/GroceryForm';
@@ -49,19 +49,26 @@ const NewGroceryPage = () => {
 
   const fetchCategories = async () => {
     setIsLoading(true);
+    setIsError(false);
+    setError(null);
     try {
       const response = await categoryApi.getAll();
-      setCategories(
-        Array.isArray(response)
-          ? response
-          : response.categories || response.results || []
-      );
-      setIsLoading(false);
+      let cats: Category[] = [];
+      if (Array.isArray(response)) {
+        cats = response;
+      } else if (Array.isArray((response as any)?.categories)) {
+        cats = (response as any).categories;
+      } else if (Array.isArray((response as any)?.results)) {
+        cats = (response as any).results;
+      }
+      setCategories(cats);
     } catch (error) {
-      setIsLoading(false);
+      setCategories([]);
       setIsError(true);
       setError(error);
       console.error('Failed to fetch categories:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -1,11 +1,29 @@
 import 'dotenv/config';
 import amqp from 'amqplib';
-import { MongoClient } from 'mongodb';
+import { connectMongo } from './mongo-connection.js';
+import http from 'http';
+
+// Minimal HTTP server for Render
+const PORT = process.env.sync_PORT || 10231;
+http.createServer((_, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Mongo sync worker is running.\n');
+}).listen(PORT, () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function connectRabbit(retries = 15) {
-  const url = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+  function getRabbitUrl() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const protocol = isProd ? 'amqps' : 'amqp';
+    const vhost = process.env.RABBIT_VHOST;
+    const vhostPart = vhost ? `/${encodeURIComponent(vhost)}` : '';
+    return `${protocol}://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}${vhostPart}`;
+  }
+
+  const url = getRabbitUrl();
 
   for (let i = 0; i < retries; i++) {
     try {
@@ -16,18 +34,18 @@ async function connectRabbit(retries = 15) {
     } catch (err) {
       console.log(`❌ RabbitMQ connection failed. Retry ${i + 1}/${retries}:`, err.message);
       console.error('Full error details:', err);
-      await sleep(3000);
+      await sleep(3000); // Ensure sleep is defined elsewhere in your code
     }
   }
+
   throw new Error('💥 Failed to connect to RabbitMQ after retries.');
 }
 
-async function connectMongo(retries = 5) {
-  const url = `mongodb://${process.env.MON_USERNAME}:${process.env.MON_PASSWORD}@${process.env.MON_HOST}:${process.env.MON_PORT}`;
-
+// Retry wrapper for connectMongo from mongo-connection.ts
+async function connectMongoWithRetry(retries = 5) {
   for (let i = 0; i < retries; i++) {
     try {
-      const client = await MongoClient.connect(url);
+      const client = await connectMongo();
       console.log('✅ Connected to MongoDB');
       return client;
     } catch (err) {
@@ -53,7 +71,8 @@ async function startConsumer() {
   channel.bindQueue('grocery-queue-deleted', 'grocery-exchange', 'grocery.deleted');
   channel.bindQueue('grocery-queue-updated', 'grocery-exchange', 'grocery.updated');
 
-  const mongo = await connectMongo();
+  // Use retry wrapper for MongoDB connection
+  const mongo = await connectMongoWithRetry();
   const db = mongo.db(process.env.MON_DB || 'mirror');
   const groceries = db.collection('groceries');
 

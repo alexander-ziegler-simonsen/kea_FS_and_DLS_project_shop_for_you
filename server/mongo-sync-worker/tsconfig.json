@@ -11,7 +11,7 @@
     "ts-node": {
       "esm": true
     },
-    "include": ["./**/*.ts"],
+    "include": ["./**/*.ts", "mongo-connection.js"],
     "exclude": ["node_modules"]
   }
 
