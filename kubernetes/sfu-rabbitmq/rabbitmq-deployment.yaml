@@ -20,6 +20,10 @@ spec:
           hostPath:
             path: /var/log/rabbitmq
             type: DirectoryOrCreate
+        - name: order-queue-logs
+          hostPath:
+            path: /var/log/order-queue
+            type: DirectoryOrCreate
       initContainers:
         - name: init-rabbitmq-logs
           image: busybox
@@ -27,12 +31,26 @@ spec:
           volumeMounts:
             - name: rabbitmq-logs
               mountPath: /var/log/rabbitmq
+        - name: init-order-queue-logs
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /var/log/order-queue && touch /var/log/order-queue/order-queue.log"]
+          volumeMounts:
+            - name: order-queue-logs
+              mountPath: /var/log/order-queue
       containers:
       - name: rabbitmq
         image: rabbitmq:management
         ports:
         - containerPort: 5672
         - containerPort: 15672
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "rabbitmqctl status || exit 1"
+          initialDelaySeconds: 15
+          periodSeconds: 10
         envFrom:
         - configMapRef:
             name: shopforyou-config
@@ -42,3 +60,5 @@ spec:
             subPath: rabbitmq.conf
           - name: rabbitmq-logs
             mountPath: /var/log/rabbitmq
+          - name: order-queue-logs
+            mountPath: /var/log/order-queue

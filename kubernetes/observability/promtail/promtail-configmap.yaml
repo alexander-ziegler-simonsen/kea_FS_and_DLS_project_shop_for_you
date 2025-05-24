@@ -96,4 +96,44 @@ data:
               format: "2006-01-02T15:04:05.000Z"
           - output:
               source: message
+      - job_name: order-queue-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: "order-queue"
+              __path__: /var/log/order-queue/*
+        pipeline_stages:
+          - output:
+              source: message
+      - job_name: order-handler-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: order-handler
+              __path__: /var/log/order-handler/order-handler.log
+        pipeline_stages:
+          - regex:
+              expression: '^\[(?P<timestamp>[^\]]+)\] (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: grocery-handler-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery-handler.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
 

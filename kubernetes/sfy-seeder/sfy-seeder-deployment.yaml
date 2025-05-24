@@ -12,6 +12,9 @@ spec:
       - name: wait-for-postgres
         image: busybox
         command: ['sh', '-c', 'until nc -z sfu-postgres 5432; do echo waiting for postgres; sleep 2; done;']
+      - name: wait-for-rabbitmq
+        image: busybox
+        command: ['sh', '-c', 'until nc -z sfu-rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done;']
       containers:
       - name: seeder
         image: jeffreyoechsner/sfy-seeder:latest

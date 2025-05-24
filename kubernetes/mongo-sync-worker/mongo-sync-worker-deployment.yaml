@@ -12,6 +12,10 @@ spec:
       labels:
         app: mongo-sync-worker
     spec:
+      initContainers:
+      - name: wait-for-rabbitmq
+        image: busybox
+        command: ['sh', '-c', 'until nc -z sfu-rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done;']
       containers:
       - name: mongo-sync-worker
         image: jeffreyoechsner/mongo-sync-worker:latest

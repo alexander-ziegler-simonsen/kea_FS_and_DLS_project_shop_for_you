@@ -39,6 +39,12 @@ spec:
             - name: transaction-receiver-logs
               mountPath: /var/log/transaction-receiver
               readOnly: true
+            - name: order-queue-logs
+              mountPath: /var/log/order-queue
+              readOnly: true
+            - name: grocery-handler-logs
+              mountPath: /var/log/grocery-handler
+              readOnly: true
       volumes:
         - name: promtail-config
           configMap:
@@ -61,3 +67,9 @@ spec:
         - name: transaction-receiver-logs
           hostPath:
             path: /var/log/transaction-receiver
+        - name: order-queue-logs
+          hostPath:
+            path: /var/log/order-queue
+        - name: grocery-handler-logs
+          hostPath:
+            path: /var/log/grocery-handler

@@ -31,8 +31,8 @@ app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080',  'http
 app.use(express.json());
 
 async function publishToRabbit(grocery: any) {
-
   const url = getRabbitUrl();
+  const logFilePath = '/var/log/grocery-handler/grocery-handler.log';
 
   try {
     const connection = await amqp.connect(url);
@@ -51,9 +51,17 @@ async function publishToRabbit(grocery: any) {
     await channel.bindQueue(queueName, exchange, routingKey);
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
 
+    // Log the event to the file
+    const logMessage = `Published grocery to RabbitMQ: ${JSON.stringify(grocery)}\n`;
+    fs.appendFileSync(logFilePath, logMessage);
+
     setTimeout(() => connection.close(), 500);
   } catch (err) {
-    console.error('RabbitMQ publish failed:', err);
+    const errorMessage = `RabbitMQ publish failed: ${err}\n`;
+    console.error(errorMessage);
+
+    // Log the error to the file
+    fs.appendFileSync(logFilePath, errorMessage);
   }
 }
 
