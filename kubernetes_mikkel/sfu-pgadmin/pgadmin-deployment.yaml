@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sfu-pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sfu-pgadmin
+  template:
+    metadata:
+      labels:
+        app: sfu-pgadmin
+    spec:
+      containers:
+      - name: pgadmin
+        image: dpage/pgadmin4:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: PGADMIN_DEFAULT_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: shopforyou-config
+              key: PGADMIN_EMAIL
+        - name: PGADMIN_DEFAULT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: shopforyou-config
+              key: PGADMIN_PASSWORD
+        volumeMounts:
+        - name: pgadmindata
+          mountPath: /var/lib/pgadmin
+      volumes:
+      - name: pgadmindata
+        persistentVolumeClaim:
+          claimName: pgadmindata
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgadmindata
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfu-pgadmin
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30050
+  selector:
+    app: sfu-pgadmin

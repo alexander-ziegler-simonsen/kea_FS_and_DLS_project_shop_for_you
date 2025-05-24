@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sfy-seeder
+spec:
+  template:
+    metadata:
+      labels:
+        app: sfy-seeder
+    spec:
+      containers:
+        - name: seeder
+          image: jeffreyoechsner/sfy-seeder:latest
+          envFrom:
+            - configMapRef:
+                name: shopforyou-config
+      restartPolicy: Never
+  backoffLimit: 2

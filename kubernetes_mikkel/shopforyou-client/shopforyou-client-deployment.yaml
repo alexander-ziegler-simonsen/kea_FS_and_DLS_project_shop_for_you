@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopforyou-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopforyou-client
+  template:
+    metadata:
+      labels:
+        app: shopforyou-client
+    spec:
+      containers:
+      - name: shopforyou-client
+        image: jeffreyoechsner/shopforyou-client:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: shopforyou-config
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopforyou-client
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30081
+  selector:
+    app: shopforyou-client
