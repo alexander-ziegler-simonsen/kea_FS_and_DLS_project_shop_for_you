@@ -8,8 +8,8 @@ spec:
     name: order-consumer
   minReplicaCount: 1
   maxReplicaCount: 5
-  pollingInterval: 10  # Reduced polling interval to 10 seconds for faster scaling
-  cooldownPeriod: 10  # Reduced cooldown period to 10 seconds for quicker scale down
+  pollingInterval: 5  # Reduced polling interval to 10 seconds for faster scaling
+  cooldownPeriod: 5  # Reduced cooldown period to 10 seconds for quicker scale down
   triggers:
   - type: prometheus
     metadata:
