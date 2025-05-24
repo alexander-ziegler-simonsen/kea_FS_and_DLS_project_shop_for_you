@@ -16,6 +16,12 @@ spec:
       - name: wait-for-postgres
         image: busybox
         command: ['sh', '-c', 'until nc -z sfu-postgres 5432; do echo waiting for postgres; sleep 2; done;']
+      - name: init-order-handler-logs
+        image: busybox
+        command: ["sh", "-c", "mkdir -p /var/log/order-handler && touch /var/log/order-handler/order-handler.log"]
+        volumeMounts:
+          - name: order-handler-logs
+            mountPath: /var/log/order-handler
       containers:
       - name: order-handler
         image: jeffreyoechsner/order_handler:latest
@@ -32,4 +38,12 @@ spec:
           value: "root"
         - name: RABBIT_PASSWORD
           value: "password"
+        volumeMounts:
+        - name: order-handler-logs
+          mountPath: /var/log/order-handler
       restartPolicy: Always
+      volumes:
+        - name: order-handler-logs
+          hostPath:
+            path: /var/log/order-handler
+            type: DirectoryOrCreate

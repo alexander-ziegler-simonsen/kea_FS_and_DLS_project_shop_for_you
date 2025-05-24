@@ -12,6 +12,13 @@ spec:
       labels:
         app: grocery-handler
     spec:
+      initContainers:
+        - name: init-grocery-handler-logs
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /var/log/grocery-handler && touch /var/log/grocery-handler/grocery-handler.log"]
+          volumeMounts:
+            - name: grocery-handler-logs
+              mountPath: /var/log/grocery-handler
       containers:
       - name: grocery-handler
         image: jeffreyoechsner/grocery_handler:latest
@@ -21,4 +28,12 @@ spec:
         envFrom:
         - configMapRef:
             name: shopforyou-config
+        volumeMounts:
+        - name: grocery-handler-logs
+          mountPath: /var/log/grocery-handler
       restartPolicy: Always
+      volumes:
+        - name: grocery-handler-logs
+          hostPath:
+            path: /var/log/grocery-handler
+            type: DirectoryOrCreate

@@ -12,12 +12,21 @@ spec:
       labels:
         app: order-consumer
     spec:
+      initContainers:
+      - name: wait-for-rabbitmq
+        image: busybox
+        command: ["sh", "-c", "until nc -z sfu-rabbitmq 5672; do echo 'Waiting for RabbitMQ...'; sleep 5; done"]
       containers:
       - name: order-consumer
         image: jeffreyoechsner/order-consumer:latest
         envFrom:
         - configMapRef:
             name: shopforyou-config
+        env:
+        - name: RABBIT_HOST
+          value: "sfu-rabbitmq"
+        - name: RABBIT_PORT
+          value: "5672"
         volumeMounts:
         - name: order-consumer-logs
           mountPath: /var/log/order-consumer
