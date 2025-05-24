@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  labels:
+    app: promtail
+spec:
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      labels:
+        app: promtail
+    spec:
+      serviceAccountName: promtail
+      containers:
+        - name: promtail
+          image: grafana/promtail:2.9.3
+          args:
+            - "-config.file=/etc/promtail/promtail.yaml"
+          volumeMounts:
+            - name: promtail-config
+              mountPath: /etc/promtail/
+            - name: varlog
+              mountPath: /var/log
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: varlogcontainers
+              mountPath: /var/log/containers
+              readOnly: true
+            - name: rabbitmq-logs
+              mountPath: /var/log/rabbitmq
+              readOnly: true
+            - name: order-consumer-logs
+              mountPath: /var/log/order-consumer
+              readOnly: true
+            - name: transaction-receiver-logs
+              mountPath: /var/log/transaction-receiver
+              readOnly: true
+            - name: order-queue-logs
+              mountPath: /var/log/order-queue
+              readOnly: true
+            - name: grocery-handler-logs
+              mountPath: /var/log/grocery-handler
+              readOnly: true
+      volumes:
+        - name: promtail-config
+          configMap:
+            name: promtail-config
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: varlogcontainers
+          hostPath:
+            path: /var/log/containers
+        - name: rabbitmq-logs
+          hostPath:
+            path: /var/log/rabbitmq
+        - name: order-consumer-logs
+          hostPath:
+            path: /var/log/order-consumer
+        - name: transaction-receiver-logs
+          hostPath:
+            path: /var/log/transaction-receiver
+        - name: order-queue-logs
+          hostPath:
+            path: /var/log/order-queue
+        - name: grocery-handler-logs
+          hostPath:
+            path: /var/log/grocery-handler

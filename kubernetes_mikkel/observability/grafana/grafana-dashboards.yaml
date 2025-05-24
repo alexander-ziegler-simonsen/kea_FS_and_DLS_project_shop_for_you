@@ -1,0 +1,24 @@
+# Example: RabbitMQ Exporter Dashboard
+# You can import dashboards from Grafana.com or define your own here.
+# See https://grafana.com/grafana/dashboards/10991 for a RabbitMQ dashboard JSON.
+
+# RabbitMQ Dashboard
+# Import the RabbitMQ dashboard JSON from Grafana.com.
+# Example: https://grafana.com/grafana/dashboards/10991
+
+# MongoDB Dashboard
+# Import the MongoDB dashboard JSON from Grafana.com.
+# Example: https://grafana.com/grafana/dashboards/2583
+
+# PostgreSQL Dashboard
+# Import the PostgreSQL dashboard JSON from Grafana.com.
+# Example: https://grafana.com/grafana/dashboards/9628
+
+# Example Loki Query for RabbitMQ Logs
+# {job="rabbitmq"}
+
+# Example Loki Query for MongoDB Logs
+# {job="mongodb"}
+
+# Example Loki Query for PostgreSQL Logs
+# {job="postgres"}
