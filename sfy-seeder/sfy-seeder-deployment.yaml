@@ -18,8 +18,20 @@ spec:
       containers:
       - name: seeder
         image: jeffreyoechsner/sfy-seeder:latest
-        envFrom:
-        - configMapRef:
-            name: shopforyou-config
+        env:
+        - name: POSTGRES_USER
+          value: root
+        - name: POSTGRES_PASSWORD
+          value: password
+        - name: RABBIT_USERNAME
+          value: root
+        - name: RABBIT_PASSWORD
+          value: password
+        - name: RABBIT_HOST
+          value: sfu-rabbitmq
+        - name: RABBIT_PORT
+          value: "5672"
+        - name: DATABASE_URL
+          value: postgres://root:password@sfu-postgres:5432/postgres
       restartPolicy: Never
   backoffLimit: 0
