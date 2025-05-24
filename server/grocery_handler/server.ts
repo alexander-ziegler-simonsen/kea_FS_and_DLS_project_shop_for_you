@@ -30,18 +30,17 @@ const upload = multer({ dest: 'uploads/' });
 app.use(cors({ origin: ['http://127.0.0.1:5500', 'http://localhost:8080',  'http://localhost:30081', "https://kea-fs-and-dls-project-shop-for-you.onrender.com"] }));
 app.use(express.json());
 
-async function publishToRabbit(grocery: any) {
+async function publishToRabbit(grocery: any, routingKey: string) {
   const url = getRabbitUrl();
-  const logFilePath = '/var/log/grocery-handler/grocery-handler.log';
+  const logFilePath = `/var/log/grocery-handler/${routingKey}.log`;
 
   try {
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     const exchange = 'grocery-exchange';
-    const queueName = 'grocery-queue';
-    const routingKey = 'grocery.created';
 
     await channel.assertExchange(exchange, 'topic', { durable: true });
+    const queueName = routingKey.replace('.', '-'); // Convert routing key to queue name format
     await channel.assertQueue(queueName, {
       durable: true,
       exclusive: false,
@@ -52,12 +51,12 @@ async function publishToRabbit(grocery: any) {
     channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(grocery)));
 
     // Log the event to the file
-    const logMessage = `Published grocery to RabbitMQ: ${JSON.stringify(grocery)}\n`;
+    const logMessage = `Published grocery to RabbitMQ [${routingKey}]: ${JSON.stringify(grocery)}\n`;
     fs.appendFileSync(logFilePath, logMessage);
 
     setTimeout(() => connection.close(), 500);
   } catch (err) {
-    const errorMessage = `RabbitMQ publish failed: ${err}\n`;
+    const errorMessage = `RabbitMQ publish failed for [${routingKey}]: ${err}\n`;
     console.error(errorMessage);
 
     // Log the error to the file
@@ -151,7 +150,7 @@ app.post('/api/groceries', (req: Request, res: Response, next: NextFunction) => 
       where: { id: grocery.id },
       relations: ['names', 'images', 'categories', 'prices', 'descriptions', 'amounts'],
     });
-    if (fullGrocery) await publishToRabbit(fullGrocery);
+    if (fullGrocery) await publishToRabbit(fullGrocery, 'grocery.created');
 
     res.json({ success: true, grocery: fullGrocery });
   })().catch(next);
@@ -385,6 +384,11 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       await channel.assertExchange(exchange, 'topic', { durable: true });
       channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(fullGrocery)));
 
+      // Log the event to the file
+      const logFilePath = `/var/log/grocery-handler/grocery.updated.log`;
+      const logMessage = `Published grocery to RabbitMQ [grocery.updated]: ${JSON.stringify(fullGrocery)}\n`;
+      fs.appendFileSync(logFilePath, logMessage);
+
       setTimeout(() => connection.close(), 500);
     } catch (err) {
       console.error('RabbitMQ publish failed:', err);
@@ -423,6 +427,11 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
 
       await channel.assertExchange(exchange, 'topic', { durable: true });
       channel.publish(exchange, routingKey, Buffer.from(JSON.stringify({ id: grocery.id })));
+
+      // Log the event to the file
+      const logFilePath = `/var/log/grocery-handler/grocery.deleted.log`;
+      const logMessage = `Published grocery to RabbitMQ [grocery.deleted]: ${JSON.stringify({ id: grocery.id })}\n`;
+      fs.appendFileSync(logFilePath, logMessage);
 
       setTimeout(() => connection.close(), 500);
     } catch (err) {

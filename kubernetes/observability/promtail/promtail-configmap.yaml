@@ -128,6 +128,21 @@ data:
             labels:
               job: grocery-handler
               __path__: /var/log/grocery-handler/grocery-handler.log
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery.created.log
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery.updated.log
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery.deleted.log
         pipeline_stages:
           - regex:
               expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<message>.*)$'
