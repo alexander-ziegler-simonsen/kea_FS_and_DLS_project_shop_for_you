@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
-// Minimal HTTP server for Render
+// Minimal HTTP server for Render or health check
 const PORT = process.env.ORDER_PORT || 10232;
 http.createServer((_, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -18,12 +18,11 @@ if (process.env.NODE_ENV !== 'production') {
   const LOG_DIR = path.join(__dirname, 'logs');
   const LOG_FILE = path.join(LOG_DIR, 'order-consumer.log');
 
-  // Ensure the log directory exists
   if (!fs.existsSync(LOG_DIR)) {
     fs.mkdirSync(LOG_DIR, { recursive: true });
   }
 
-  logToFile = function(message: string) {
+  logToFile = function (message: string) {
     const timestamp = new Date().toISOString();
     fs.appendFileSync(LOG_FILE, `[${timestamp}] ${message}\n`);
   };
@@ -47,6 +46,7 @@ async function connectRabbitMQ() {
     const channel = await connection.createChannel();
 
     await channel.assertQueue(QUEUE_NAME, { durable: true });
+    await channel.prefetch(1); // Ensure only one message is processed at a time
     console.log(`✅ Listening for messages on queue: ${QUEUE_NAME}`);
 
     channel.consume(
@@ -56,20 +56,24 @@ async function connectRabbitMQ() {
           const messageContent = msg.content.toString();
           console.log('📦 Received message:', messageContent);
 
-          // Process the message
-          processOrderMessage(JSON.parse(messageContent));
+          try {
+            // Process the message
+            processOrderMessage(JSON.parse(messageContent));
 
-          // Acknowledge the message
-          channel.ack(msg);
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 45000)); // 45-second delay
 
-          // Wait 30 seconds before processing the next message
-          await new Promise(resolve => setTimeout(resolve, 30000));
+            // Acknowledge message
+            channel.ack(msg);
+          } catch (err) {
+            console.error('❌ Error processing message:', err);
+            // Optionally: don't ack, so it can be retried
+          }
         }
       },
       { noAck: false }
     );
 
-    // Graceful shutdown
     process.on('SIGINT', async () => {
       console.log('🔌 Closing RabbitMQ connection...');
       await connection.close();
@@ -84,8 +88,7 @@ async function connectRabbitMQ() {
 function processOrderMessage(message: any) {
   console.log('Processing order:', message);
   logToFile(`Processing order: ${JSON.stringify(message)}`);
-
-  // Add your logic here (e.g., update inventory, notify services, etc.)
+  // TODO: Add actual processing logic here
 }
 
 // Start the consumer

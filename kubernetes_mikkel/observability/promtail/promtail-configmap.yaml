@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  labels:
+    app: promtail
+data:
+  promtail.yaml: |
+    server:
+      http_listen_port: 9080
+      grpc_listen_port: 0
+    positions:
+      filename: /tmp/positions.yaml
+    clients:
+      - url: http://loki.default.svc.cluster.local:3100/loki/api/v1/push
+    scrape_configs:
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - action: replace
+            source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: replace
+            replacement: varlogs
+            target_label: job
+          - action: replace
+            source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+            regex: (.+);(.+)
+            replacement: /var/log/pods/*$1/*$2/*.log
+            target_label: __path__
+        pipeline_stages:
+          - docker: {}
+      - job_name: rabbitmq-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: rabbitmq
+              __path__: /var/log/rabbitmq/rabbitmq.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) \[info\] (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02 15:04:05.000000+00:00"
+          - output:
+              source: message
+      - job_name: order-consumer-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: order-consumer
+              __path__: /var/log/order-consumer/order-consumer.log
+        pipeline_stages:
+          - regex:
+              expression: '^\[(?P<timestamp>[^\]]+)\] (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: mongodb-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: mongodb
+              __path__: /var/log/mongodb/mongodb.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<level>[^ ]+) (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: postgres-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: postgres
+              __path__: /var/log/postgresql/postgresql.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<level>[^ ]+) (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: order-queue-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: "order-queue"
+              __path__: /var/log/order-queue/*
+        pipeline_stages:
+          - output:
+              source: message
+      - job_name: order-handler-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: order-handler
+              __path__: /var/log/order-handler/order-handler.log
+        pipeline_stages:
+          - regex:
+              expression: '^\[(?P<timestamp>[^\]]+)\] (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
+      - job_name: grocery-handler-logs
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery-handler.log
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery.created.log
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery.updated.log
+          - targets:
+              - localhost
+            labels:
+              job: grocery-handler
+              __path__: /var/log/grocery-handler/grocery.deleted.log
+        pipeline_stages:
+          - regex:
+              expression: '^(?P<timestamp>[^ ]+ [^ ]+) (?P<message>.*)$'
+          - timestamp:
+              source: timestamp
+              format: "2006-01-02T15:04:05.000Z"
+          - output:
+              source: message
