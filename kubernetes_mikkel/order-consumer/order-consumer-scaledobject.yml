@@ -1,0 +1,19 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: order-consumer-scaledobject
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: order-consumer
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  pollingInterval: 30  # Polling interval in seconds
+  cooldownPeriod: 30  # Cooldown period in seconds
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus.default.svc.cluster.local:9090
+      metricName: rabbitmq_queue_messages
+      query: avg(rabbitmq_queue_memory{queue="order-queue"})
+      threshold: '1'  # Scale up when there are more than 1 messages in the queue

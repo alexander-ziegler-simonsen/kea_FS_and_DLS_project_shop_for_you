@@ -51,7 +51,7 @@ async function connectRabbitMQ() {
 
     channel.consume(
       QUEUE_NAME,
-      (msg: amqp.ConsumeMessage | null) => {
+      async (msg: amqp.ConsumeMessage | null) => {
         if (msg) {
           const messageContent = msg.content.toString();
           console.log('📦 Received message:', messageContent);
@@ -61,6 +61,9 @@ async function connectRabbitMQ() {
 
           // Acknowledge the message
           channel.ack(msg);
+
+          // Wait 30 seconds before processing the next message
+          await new Promise(resolve => setTimeout(resolve, 30000));
         }
       },
       { noAck: false }
