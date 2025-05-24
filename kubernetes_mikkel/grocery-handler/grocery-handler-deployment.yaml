@@ -20,7 +20,14 @@ spec:
         envFrom:
         - configMapRef:
             name: shopforyou-config
+        volumeMounts:
+          - name: grocery-handler-logs
+            mountPath: /var/log/grocery-handler
       restartPolicy: Always
+      volumes:
+        - name: grocery-handler-logs
+          hostPath:
+            path: /var/log/grocery-handler
 ---
 apiVersion: v1
 kind: Service
