@@ -52,7 +52,9 @@ async function publishToRabbit(grocery: any, routingKey: string) {
 
     // Log the event to the file
     const logMessage = `Published grocery to RabbitMQ [${routingKey}]: ${JSON.stringify(grocery)}\n`;
-    fs.appendFileSync(logFilePath, logMessage);
+    if (isLoggingEnabled()) {
+      fs.appendFileSync(logFilePath, logMessage);
+    }
 
     setTimeout(() => connection.close(), 500);
   } catch (err) {
@@ -60,7 +62,9 @@ async function publishToRabbit(grocery: any, routingKey: string) {
     console.error(errorMessage);
 
     // Log the error to the file
-    fs.appendFileSync(logFilePath, errorMessage);
+    if (isLoggingEnabled()) {
+      fs.appendFileSync(logFilePath, errorMessage);
+    }
   }
 }
 
@@ -387,7 +391,9 @@ app.post('/api/groceries/update/:id', upload.single('image'), (req: Request, res
       // Log the event to the file
       const logFilePath = `/var/log/grocery-handler/grocery.updated.log`;
       const logMessage = `Published grocery to RabbitMQ [grocery.updated]: ${JSON.stringify(fullGrocery)}\n`;
-      fs.appendFileSync(logFilePath, logMessage);
+      if (isLoggingEnabled()) {
+        fs.appendFileSync(logFilePath, logMessage);
+      }
 
       setTimeout(() => connection.close(), 500);
     } catch (err) {
@@ -431,7 +437,9 @@ app.delete('/api/groceries/:id', (req: Request, res: Response, next: NextFunctio
       // Log the event to the file
       const logFilePath = `/var/log/grocery-handler/grocery.deleted.log`;
       const logMessage = `Published grocery to RabbitMQ [grocery.deleted]: ${JSON.stringify({ id: grocery.id })}\n`;
-      fs.appendFileSync(logFilePath, logMessage);
+      if (isLoggingEnabled()) {
+        fs.appendFileSync(logFilePath, logMessage);
+      }
 
       setTimeout(() => connection.close(), 500);
     } catch (err) {
@@ -552,3 +560,6 @@ async function startQuantityUpdateConsumer() {
 startQuantityUpdateConsumer();
 
 app.listen(3005, () => console.log('🚀 Server running at http://localhost:3005'));
+
+// Add a utility function to check if logging is enabled
+const isLoggingEnabled = () => process.env.LOGGING === 'yes';
