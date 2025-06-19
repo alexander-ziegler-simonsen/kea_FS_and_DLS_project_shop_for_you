@@ -31,8 +31,8 @@ const useCategories = () =>
       return { count: 0, next: null, results: [] };
     },
     {
-      staleTime: ms("0"),
-      cacheTime: ms("0"),
+      staleTime: ms("15000"),
+      cacheTime: ms("15000"),
       initialData: {
         count: categories.results.length,
         next: null,
